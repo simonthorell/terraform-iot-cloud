@@ -12,6 +12,10 @@ module "iot_core" {
   thing_name  = var.iot_thing_name
 }
 
+module "dynamodb" {
+  source = "./dynamodb"
+}
+
 # Resources
 resource "aws_iot_certificate" "example_cert" {
   active = true
