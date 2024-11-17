@@ -35,3 +35,29 @@ resource "local_file" "iot_root_ca" {
   EOT
   filename = "${path.root}/../certs/root_ca.pem"
 }
+
+# AWS IoT-Device Policy Setup
+resource "aws_iot_policy" "device_policy" {
+  name   = var.policy_name
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "iot:Connect",
+          "iot:Publish",
+          "iot:Receive",
+          "iot:Subscribe"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach the policy to the IoT Certificate
+resource "aws_iot_policy_attachment" "device_policy_attachment" {
+  policy = aws_iot_policy.device_policy.name
+  target = aws_iot_certificate.iot_cert.arn
+}
