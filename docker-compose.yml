@@ -23,3 +23,16 @@ services:
     ports:
       - "4566:4566" # LocalStack gateway for AWS CLI & SDKs
       - "4567:4567" # LocalStack S3
+
+  iot-client:
+    container_name: iot-client
+    build:
+      context: .
+      dockerfile: ./iot-device/virtual-device/Dockerfile
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./certs/root_ca.pem:/certs/root_ca.pem
+      - ./certs/iot_cert.pem:/certs/iot_cert.pem
+      - ./certs/iot_private_key.pem:/certs/iot_private_key.pem
+      - ./certs/iot_endpoint.txt:/certs/iot_endpoint.txt

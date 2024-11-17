@@ -7,8 +7,10 @@ iot-user_accessKeys.csv
 certs/*.pem
 certs/*.crt
 certs/*.key
+certs/*.txt
 
 # Terraform
 /terraform/.terraform
 /terraform/.terraform.lock.hcl
 /terraform/terraform.tfstate
+/terraform/terraform.tfstate.backup
