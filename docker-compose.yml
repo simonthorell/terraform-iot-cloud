@@ -1,0 +1,25 @@
+services:
+  terraform:
+    container_name: terraform
+    build:
+      context: ./terraform
+      dockerfile: Dockerfile
+    environment:
+      - TF_VAR_aws_account_id=${AWS_ACCOUNT_ID}
+      - TF_VAR_aws_region=${AWS_DEFAULT_REGION}
+      - TF_VAR_aws_access_key_id=${AWS_ACCESS_KEY_ID}
+      - TF_VAR_aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - .:/workspace
+    working_dir: /workspace/terraform # Path to Terraform files
+    entrypoint: ["/workspace/terraform/entrypoint.sh"]
+
+  localstack:
+    container_name: localstack
+    image: localstack/localstack
+    environment:
+      - SERVICES=iot,dynamodb,amplify # Mocked AWS services
+      - DEFAULT_REGION=${AWS_DEFAULT_REGION}
+    ports:
+      - "4566:4566" # LocalStack gateway for AWS CLI & SDKs
+      - "4567:4567" # LocalStack S3
