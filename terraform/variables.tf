@@ -17,3 +17,8 @@ variable "aws_secret_access_key" {
   description = "The AWS Secret Access Key"
   type        = string
 }
+
+variable "iot_thing_name" {
+  description = "The name of the IoT Thing"
+  default     = "iot-device"
+}

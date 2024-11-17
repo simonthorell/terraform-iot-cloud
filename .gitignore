@@ -1,3 +1,14 @@
-DS_Store
+# Root Directory
 .env
+DS_Store
 iot-user_accessKeys.csv
+
+# Certificates
+certs/*.pem
+certs/*.crt
+certs/*.key
+
+# Terraform
+/terraform/.terraform
+/terraform/.terraform.lock.hcl
+/terraform/terraform.tfstate
