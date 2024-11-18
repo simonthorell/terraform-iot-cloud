@@ -56,7 +56,9 @@ resource "aws_iot_policy" "device_policy" {
           "iot:Connect",
           "iot:Publish",
           "iot:Receive",
-          "iot:Subscribe"
+          "iot:Subscribe",
+          "iot:UpdateThingShadow",
+          "iot:GetThingShadow"
         ]
         Resource = "*"
       }
@@ -84,4 +86,63 @@ resource "local_file" "iot_endpoint_file" {
 output "iot_endpoint" {
   description = "The AWS IoT Core endpoint for MQTT connections"
   value       = data.aws_iot_endpoint.iot_endpoint.endpoint_address
+}
+
+# IoT Topic Rule to write incoming MQTT data to DynamoDB
+# resource "aws_iot_topic_rule" "iot_data_to_dynamodb" {
+#   name        = "iotDataToDynamoDB"
+#   description = "Route IoT data directly to DynamoDB"
+
+#   # Use IoT SQL to extract device_id from the topic and include all message payload data
+#   sql = "SELECT *, topic(3) AS device_id FROM 'iot/data/+'"
+#   sql_version = "2016-03-23"
+
+#   # DynamoDB action to store the incoming data
+#   dynamodb {
+#     role_arn       = var.iot_rule_dynamodb_role_arn
+#     table_name     = var.dynamodb_table_name
+#     hash_key_field = "device_id"          # The hash key field in DynamoDB
+#     hash_key_value = "device_id"       # Directly use the device_id alias from SQL
+#     range_key_field = "timestamp"         # The range key field in DynamoDB
+#     range_key_value = "timestamp()"       # Use the message's timestamp
+#   }
+
+#   # Enable the rule
+#   # enabled = true
+# }
+
+resource "aws_iot_topic_rule" "iot_data_to_dynamodb" {
+  name        = "iotDataToDynamoDB"
+  description = "Route IoT data directly to DynamoDB"
+  enabled     = true
+
+  # SQL query to select all data and extract device_id from topic
+  sql         = "SELECT * FROM '+/telemetry'"
+  sql_version = "2016-03-23"
+
+  # DynamoDBv2 action to store the incoming data
+  dynamodbv2 {
+    role_arn   = var.iot_rule_dynamodb_role_arn
+
+    put_item {
+      table_name = var.dynamodb_table_name
+    }
+  }
+}
+
+# Lambda Function (using Go compiled & zipped binary)
+resource "aws_lambda_function" "iot_data_lambda" {
+  filename         = "${path.root}/../api/dist/iot_data_lambda.zip"
+  function_name    = "iotDataFunction"
+  role             = var.lambda_role_arn
+  handler          = "main"
+  runtime          = "provided.al2"
+  timeout          = 10
+  memory_size      = 128
+
+  environment {
+    variables = {
+      TABLE_NAME = var.dynamodb_table_name
+    }
+  }
 }

@@ -24,6 +24,13 @@ services:
       - "4566:4566" # LocalStack gateway for AWS CLI & SDKs
       - "4567:4567" # LocalStack S3
 
+  lambda-compiler:
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    volumes:
+      - ./api/dist:/dist
+
   iot-client:
     container_name: iot-client
     build:
@@ -36,3 +43,15 @@ services:
       - ./certs/iot_cert.pem:/certs/iot_cert.pem
       - ./certs/iot_private_key.pem:/certs/iot_private_key.pem
       - ./certs/iot_endpoint.txt:/certs/iot_endpoint.txt
+
+  esp32-rust:
+    image: espressif/idf-rust:esp32c3_latest
+    container_name: esp32_rust_dev
+    working_dir: /workspace
+    volumes:
+      - ./iot-device/esp-template:/workspace
+      - ./certs:/workspace/certs
+    stdin_open: true
+    tty: true
+    command: sh
+    # Open shell with: docker exec -it esp32_rust_dev bash
