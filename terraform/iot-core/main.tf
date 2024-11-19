@@ -1,4 +1,6 @@
-# Create the IoT Thing
+#===================================================================
+# IoT-Core Thing
+#===================================================================
 resource "aws_iot_thing" "iot_thing" {
   name = var.thing_name
 }
@@ -14,6 +16,9 @@ resource "aws_iot_thing_principal_attachment" "iot_attachment" {
   principal = aws_iot_certificate.iot_cert.arn
 }
 
+#===================================================================
+# IoT-Core Thing Certificates
+#===================================================================
 # Save the certificate PEM content to a local file
 resource "local_file" "iot_cert_pem" {
   content  = aws_iot_certificate.iot_cert.certificate_pem
@@ -44,6 +49,9 @@ resource "local_file" "iot_root_ca" {
   filename   = "${path.root}/../certs/root_ca.pem"
 }
 
+#===================================================================
+# IoT-Core Rules & Policies
+#===================================================================
 # AWS IoT-Device Policy Setup
 resource "aws_iot_policy" "device_policy" {
   name   = var.policy_name
@@ -72,6 +80,9 @@ resource "aws_iot_policy_attachment" "device_policy_attachment" {
   target = aws_iot_certificate.iot_cert.arn
 }
 
+#===================================================================
+# IoT-Core MQTT Setup
+#===================================================================
 # Retrieve the AWS IoT Core endpoint
 data "aws_iot_endpoint" "iot_endpoint" {
   endpoint_type = "iot:Data-ATS"
@@ -87,29 +98,6 @@ output "iot_endpoint" {
   description = "The AWS IoT Core endpoint for MQTT connections"
   value       = data.aws_iot_endpoint.iot_endpoint.endpoint_address
 }
-
-# IoT Topic Rule to write incoming MQTT data to DynamoDB
-# resource "aws_iot_topic_rule" "iot_data_to_dynamodb" {
-#   name        = "iotDataToDynamoDB"
-#   description = "Route IoT data directly to DynamoDB"
-
-#   # Use IoT SQL to extract device_id from the topic and include all message payload data
-#   sql = "SELECT *, topic(3) AS device_id FROM 'iot/data/+'"
-#   sql_version = "2016-03-23"
-
-#   # DynamoDB action to store the incoming data
-#   dynamodb {
-#     role_arn       = var.iot_rule_dynamodb_role_arn
-#     table_name     = var.dynamodb_table_name
-#     hash_key_field = "device_id"          # The hash key field in DynamoDB
-#     hash_key_value = "device_id"       # Directly use the device_id alias from SQL
-#     range_key_field = "timestamp"         # The range key field in DynamoDB
-#     range_key_value = "timestamp()"       # Use the message's timestamp
-#   }
-
-#   # Enable the rule
-#   # enabled = true
-# }
 
 resource "aws_iot_topic_rule" "iot_data_to_dynamodb" {
   name        = "iotDataToDynamoDB"
@@ -130,6 +118,9 @@ resource "aws_iot_topic_rule" "iot_data_to_dynamodb" {
   }
 }
 
+#===================================================================
+# IoT-Core Lambda Functions
+#===================================================================
 # Lambda Function (using Go compiled & zipped binary)
 resource "aws_lambda_function" "iot_data_lambda" {
   filename         = "${path.root}/../api/dist/iot_data_lambda.zip"

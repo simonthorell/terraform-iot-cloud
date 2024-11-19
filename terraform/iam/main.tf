@@ -1,3 +1,6 @@
+#===================================================================
+# IAM IoT-Core to DynamoDB Roles and Policies
+#===================================================================
 resource "aws_iam_role" "iot_rule_dynamodb_role" {
   name = "IoTRuleDynamoDBRole"
 
@@ -15,6 +18,7 @@ resource "aws_iam_role" "iot_rule_dynamodb_role" {
   })
 }
 
+# Let IoT Rule Access DynamoDB
 resource "aws_iam_policy" "iot_dynamodb_policy" {
   name   = "IoTDynamoDBPolicy"
   policy = jsonencode({
@@ -36,6 +40,9 @@ resource "aws_iam_role_policy_attachment" "attach_iot_dynamodb_policy" {
   policy_arn = aws_iam_policy.iot_dynamodb_policy.arn
 }
 
+#===================================================================
+# IAM Lambda Rules & Policies
+#===================================================================
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "iot_data_lambda_role"

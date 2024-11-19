@@ -1,3 +1,6 @@
+#===================================================================
+# IoT-Core Outputs
+#===================================================================
 output "certificate_arn" {
   description = "The ARN of the IoT Certificate"
   value       = aws_iot_certificate.iot_cert.arn
