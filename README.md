@@ -1,5 +1,42 @@
 # IoT Terraform AWS Cloud
 
+## Prerequisites
+
+### Required Applications
+
+To set up and develop this project, you’ll need the following applications:
+
+1. **[Git](https://git-scm.com/downloads)**
+2. **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**
+
+### Optional Applications
+
+These tools can enhance your development experience but are not strictly required:
+
+1. **[Visual Studio Code (VS Code)](https://code.visualstudio.com/)**
+
+2. **[Node.js](https://nodejs.org/)**
+
+3. **[npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)**
+
+4. **[Vue Devtools](https://devtools.vuejs.org/guide/installation.html)**
+
+### Recommended VS Code Extensions
+
+If you use VS Code as your IDE, the following extensions are recommended to improve your workflow:
+
+1. **[Terraform](https://marketplace.visualstudio.com/items?itemName=hashicorp.terraform)**
+
+2. **[Go](https://marketplace.visualstudio.com/items?itemName=golang.Go)**
+
+3. **[Rust Analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)**
+
+4. **[Prettier - Code Formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)**
+
+5. **[ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)**
+
+6. **[Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)**
+
 ## Setup AWS Account
 
 1. Create [AWS](https://console.aws.amazon.com/) Account.
