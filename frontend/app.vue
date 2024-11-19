@@ -3,7 +3,7 @@
     <SiteSidebar />
     <div class="main-content">
       <SiteHeader />
-      <IoTDashboard />
+      <SiteContent />
     </div>
   </div>
 </template>
@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import SiteHeader from "~/components/site-header/header.vue";
 import SiteSidebar from "~/components/site-sidebar/sidebar.vue";
-import IoTDashboard from "~/components/dashboard/dashboard.vue";
+import SiteContent from "~/components/site-content/content.vue";
 </script>
 
 <style scoped>
