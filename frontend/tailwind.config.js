@@ -9,7 +9,17 @@ export default {
     "./error.vue",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        iotBlack: "#111",
+        iotGray: "#232A37",
+        iotGreen: "#00ff00",
+        iotGreenHover: "#77ff77",
+      },
+      fontFamily: {
+        mono: ["Courier New", "Courier", "monospace"],
+      },
+    },
   },
   plugins: [],
 }
