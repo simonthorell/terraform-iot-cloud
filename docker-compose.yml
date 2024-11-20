@@ -24,7 +24,20 @@ services:
       - "4566:4566" # LocalStack gateway for AWS CLI & SDKs
       - "4567:4567" # LocalStack S3
 
-  lambda-compiler:
+  build-frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend/dist:/app/dist
+    command: > # Zip Nuxt3 SSR build for AWS Deployment
+      sh -c "
+      mkdir -p /app/dist && \
+      zip -r /app/dist/nuxt3-ssr-build.zip .output/server"
+
+  build-api:
+    container_name: api
     build:
       context: .
       dockerfile: ./api/Dockerfile
