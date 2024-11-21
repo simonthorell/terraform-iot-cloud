@@ -34,7 +34,7 @@ services:
     command: > # Zip Nuxt3 SSR build for AWS Deployment
       sh -c "
       mkdir -p /app/dist && \
-      zip -r /app/dist/nuxt3-ssr-build.zip .output/server"
+      zip -r /app/dist/nuxt3-csr-build.zip .output/public"
 
   build-api:
     container_name: api
