@@ -84,3 +84,52 @@ resource "aws_iam_role_policy_attachment" "lambda_role_policy_attach" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.lambda_dynamodb_policy.arn
 }
+
+#===================================================================
+# IAM Amplify Service Role & Policies
+#===================================================================
+
+# IAM Role for Amplify
+resource "aws_iam_role" "amplify_service_role" {
+  name = "amplify-service-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "amplify.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM Policy for Amplify to Access S3
+resource "aws_iam_policy" "amplify_s3_policy" {
+  name   = "amplify-s3-access-policy"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
+        Resource = [
+          "arn:aws:s3:::${var.s3_bucket_name}",
+          "arn:aws:s3:::${var.s3_bucket_name}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# Attach the S3 policy to the Amplify service role
+resource "aws_iam_role_policy_attachment" "amplify_s3_policy_attachment" {
+  role       = aws_iam_role.amplify_service_role.name
+  policy_arn = aws_iam_policy.amplify_s3_policy.arn
+}

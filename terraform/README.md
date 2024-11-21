@@ -9,7 +9,7 @@ If using VS-Code, install the [Terraform Extension](https://marketplace.visualst
 Attached to shell of Docker Terraform container:
 
 ```shell
-docker-compose -it terraform /bin/bash
+docker exec -it terraform /bin/bash
 ```
 
 ### Apply Configuration Updates to AWS

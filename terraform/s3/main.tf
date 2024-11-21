@@ -33,8 +33,28 @@ resource "aws_s3_bucket_policy" "policy" {
       "Principal": {
         "AWS": "arn:aws:iam::474412366603:user/iot-user"
       },
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::${aws_s3_bucket.build_artifacts.id}/*"
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::${aws_s3_bucket.build_artifacts.id}",
+        "arn:aws:s3:::${aws_s3_bucket.build_artifacts.id}/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+         "AWS": "${var.amplify_role_arn}"
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::${aws_s3_bucket.build_artifacts.id}",
+        "arn:aws:s3:::${aws_s3_bucket.build_artifacts.id}/*"
+      ]
     }
   ]
 }
@@ -44,8 +64,8 @@ POLICY
 # Upload the build artifacts to S3
 resource "aws_s3_object" "build_zip" {
   bucket       = aws_s3_bucket.build_artifacts.id
-  key          = "nuxt3-ssr-build.zip"
-  source       = "${path.root}/../frontend/dist/nuxt3-ssr-build.zip"
+  key          = "nuxt3-csr-build.zip"
+  source       = "${path.root}/../frontend/dist/nuxt3-csr-build.zip"
   content_type = "application/zip"
 
   tags = {

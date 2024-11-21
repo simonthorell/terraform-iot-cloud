@@ -25,3 +25,9 @@ variable "iot_thing_name" {
   description = "The name of the IoT Thing"
   default     = "iot-device"
 }
+
+variable "environment" {
+  description = "Deployment environment (e.g., dev, staging, prod)"
+  type        = string
+  default     = "production"
+}
