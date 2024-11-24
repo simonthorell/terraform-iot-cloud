@@ -24,7 +24,7 @@ services:
       - "4566:4566" # LocalStack gateway for AWS CLI & SDKs
       - "4567:4567" # LocalStack S3
 
-  build-frontend:
+  frontend:
     container_name: frontend
     build:
       context: ./frontend
@@ -36,7 +36,7 @@ services:
       mkdir -p /app/dist && \
       zip -r /app/dist/nuxt3-csr-build.zip .output/public"
 
-  build-api:
+  api:
     container_name: api
     build:
       context: .

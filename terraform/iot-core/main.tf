@@ -123,7 +123,7 @@ resource "aws_iot_topic_rule" "iot_data_to_dynamodb" {
 #===================================================================
 # Lambda Function (using Go compiled & zipped binary)
 resource "aws_lambda_function" "iot_data_lambda" {
-  filename         = "${path.root}/../api/dist/iot_data_lambda.zip"
+  filename         = "${path.root}/../api/dist/iot_data.zip"
   function_name    = "iotDataFunction"
   role             = var.lambda_role_arn
   handler          = "main"
