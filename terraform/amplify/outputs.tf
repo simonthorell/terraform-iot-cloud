@@ -14,5 +14,5 @@ output "webhook_url" {
 # Write the URL to file
 resource "local_file" "amplify_app_url" {
   content  = aws_amplify_app.nuxt3_app.default_domain
-  filename = "${path.module}/../certs/amplify_app_url.txt"
+  filename = "${path.module}/../../certs/amplify_app_url.txt"
 }

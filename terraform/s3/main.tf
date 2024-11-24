@@ -11,6 +11,29 @@ resource "aws_s3_bucket" "build_artifacts" {
   }
 }
 
+resource "aws_s3_bucket_ownership_controls" "build_artifacts" {
+  bucket = aws_s3_bucket.build_artifacts.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "allow_public" {
+  bucket = aws_s3_bucket.build_artifacts.id
+
+  block_public_acls       = false
+  ignore_public_acls      = false
+  block_public_policy     = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_acl" "build_artifacts" {
+  depends_on = [aws_s3_bucket_ownership_controls.build_artifacts]
+
+  bucket = aws_s3_bucket.build_artifacts.id
+  acl    = "public-read"
+}
+
 # Enable versioning for the S3 bucket
 resource "aws_s3_bucket_versioning" "versioning" {
   bucket = aws_s3_bucket.build_artifacts.id
@@ -20,7 +43,6 @@ resource "aws_s3_bucket_versioning" "versioning" {
   }
 }
 
-# Define bucket policy (only allow access for 'iot-user')
 resource "aws_s3_bucket_policy" "policy" {
   bucket = aws_s3_bucket.build_artifacts.id
 
@@ -31,30 +53,30 @@ resource "aws_s3_bucket_policy" "policy" {
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::474412366603:user/iot-user"
+        "Service": "amplify.amazonaws.com"
       },
       "Action": [
-        "s3:GetObject",
-        "s3:ListBucket"
+        "s3:ListBucket",
+        "s3:GetObject"
       ],
       "Resource": [
-        "arn:aws:s3:::${aws_s3_bucket.build_artifacts.id}",
-        "arn:aws:s3:::${aws_s3_bucket.build_artifacts.id}/*"
+        "arn:aws:s3:::nuxt3-app-build-artifacts",
+        "arn:aws:s3:::nuxt3-app-build-artifacts/*"
       ]
     },
     {
-      "Effect": "Allow",
-      "Principal": {
-         "AWS": "${var.amplify_role_arn}"
-      },
-      "Action": [
-        "s3:GetObject",
-        "s3:ListBucket"
-      ],
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
       "Resource": [
-        "arn:aws:s3:::${aws_s3_bucket.build_artifacts.id}",
-        "arn:aws:s3:::${aws_s3_bucket.build_artifacts.id}/*"
-      ]
+        "arn:aws:s3:::nuxt3-app-build-artifacts",
+        "arn:aws:s3:::nuxt3-app-build-artifacts/*"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
     }
   ]
 }
@@ -67,6 +89,7 @@ resource "aws_s3_object" "build_zip" {
   key          = "nuxt3-csr-build.zip"
   source       = "${path.root}/../frontend/dist/nuxt3-csr-build.zip"
   content_type = "application/zip"
+  acl          = "public-read" # Public read access
 
   tags = {
     Name        = "Nuxt3 Build Artifact"

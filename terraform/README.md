@@ -29,6 +29,12 @@ terraform apply -target=module.iot_core -auto-approve
 terraform apply -target=module.dynamodb -auto-approve
 ```
 
+You sometimes need to destroy old versions if a deploy fails:
+
+```bash
+terraform destroy -target=module.amplify
+```
+
 ### Update Device Shadow State
 
 Post to topic `$aws/things/iot-device/shadow/update`:
