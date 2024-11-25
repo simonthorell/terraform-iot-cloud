@@ -22,7 +22,7 @@ variable "lambda_role_arn" {
   description = "IAM Role ARN for Lambda"
 }
 
-variable "iot_dynamodb_role_arn" {
+variable "iot_rule_dynamodb_role_arn" {
   type        = string
   description = "IAM role ARN for IoT rule to write to DynamoDB"
 }

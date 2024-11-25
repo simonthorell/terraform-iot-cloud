@@ -12,11 +12,11 @@ provider "aws" {
 # Modules: IoT-Core, IAM, DynamoDB, Lambda, and Amplify
 #===================================================================
 module "iot_core" {
-  source                      = "./iot-core"
-  thing_name                  = var.iot_thing_name
-  dynamodb_table_name         = module.dynamodb.table_name
-  lambda_role_arn             = module.iam.lambda_role_arn
-  iot_dynamodb_role_arn       = module.iam.iot_rule_dynamodb_role_arn
+  source                     = "./iot-core"
+  thing_name                 = var.iot_thing_name
+  dynamodb_table_name        = module.dynamodb.table_name
+  lambda_role_arn            = module.iam.lambda_role_arn
+  iot_rule_dynamodb_role_arn = module.iam.iot_rule_dynamodb_role_arn
 }
 
 module "dynamodb" {
@@ -24,25 +24,25 @@ module "dynamodb" {
 }
 
 module "iam" {
-  source             = "./iam"
-  aws_account_id     = var.aws_account_id
-  aws_region         = var.aws_region
-  dynamodb_table_arn = module.dynamodb.table_arn
-  s3_bucket_name     = module.s3.bucket_name
+  source               = "./iam"
+  aws_account_id       = var.aws_account_id 
+  aws_region           = var.aws_region
+  dynamodb_table_arn   = module.dynamodb.table_arn
+  s3_bucket_name       = module.s3.bucket_name
 }
 
 module "s3" {
-  source = "./s3"
-  amplify_role_arn = module.iam.amplify_service_role_arn
-  environment = var.environment
+  source               = "./s3"
+  amplify_role_arn     = module.iam.amplify_service_role_arn
+  environment          = var.environment
 }
 
 module "amplify" {
-  source = "./amplify"
+  source               = "./amplify"
   iam_service_role_arn = module.iam.amplify_service_role_arn
-  s3_bucket_name = module.s3.bucket_name
-  s3_object_key  = module.s3.object_key
-  environment    = var.environment
+  s3_bucket_name       = module.s3.bucket_name
+  s3_object_key        = module.s3.object_key
+  environment          = var.environment
 }
 
 #===================================================================

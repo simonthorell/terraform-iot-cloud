@@ -110,10 +110,11 @@ resource "aws_iot_topic_rule" "iot_data_to_dynamodb" {
 
   # DynamoDBv2 action to store the incoming data
   dynamodbv2 {
-    role_arn   = var.iot_dynamodb_role_arn
+    role_arn   = var.iot_rule_dynamodb_role_arn
 
     put_item {
-      table_name = var.dynamodb_table_name
+      # table_name = var.dynamodb_table_name
+      table_name = "iot_data"
     }
   }
 }
@@ -157,14 +158,12 @@ resource "aws_iot_topic_rule" "shadow_to_dynamodb" {
       "$aws/things/+/shadow/update/documents"
   SQL
 
-  dynamodb {
-    table_name      = "devices"
-    role_arn        = var.iot_dynamodb_role_arn
-    hash_key_field  = "device_id"
-    hash_key_value  = "state.reported.device_id"
-    range_key_field = "timestamp"
-    range_key_value = "${timestamp()}"
+  # DynamoDBv2 action to store the incoming data
+  dynamodbv2 {
+    role_arn   = var.iot_rule_dynamodb_role_arn
+
+    put_item {
+      table_name = "devices"
+    }
   }
 }
-
-

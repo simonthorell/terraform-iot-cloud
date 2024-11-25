@@ -33,13 +33,15 @@ These instructions can also be followed using f.e. [MQTT Explorer](https://mqtt-
 - `iot_cert.pem` **_(CLIENT CERTIFICATE)_**
 - `iot_private_key.pem` **_(CLIENT KEY)_**
 
-4. Post IoT Data to topic `iot/data/<DEVICE-ID>`:
+4. Post IoT Data to topic `<DEVICE-ID>/telemetry`:
+
+_**TODO: Add timestamp in lambda?**_
 
 ```shell
-# Example
 {
-  device_id: 123,
-  temperature: 23,
-  humidity: 14
+  "device_id": "<DEVICE-ID>",
+  "timestamp": 1693851730,
+  "temperature": 23,
+  "humidity": 50
 }
 ```
