@@ -13,13 +13,35 @@ resource "aws_amplify_app" "nuxt3_app" {
   custom_rule {
     source = "/<*>"
     target = "/index.html"
-    status = "200"
+    status = "404"
   }
+
+  # build_spec = <<-EOT
+  #   version: 2.0
+  #   frontend:
+  #     phases:
+  #       preBuild:
+  #         commands: []
+  #       build:
+  #         commands: []
+  #     artifacts:
+  #       baseDirectory: .
+  #       files:
+  #         - '**/*'
+  #     cache:
+  #       paths: []
+  # EOT
 }
 
 resource "aws_amplify_branch" "main_branch" {
   app_id      = aws_amplify_app.nuxt3_app.id
   branch_name = "main"
+
+  # Mark this branch as the production branch
+  stage = "PRODUCTION"
+
+  # Enable basic auth for the branch
+  enable_basic_auth = false
 }
 
 resource "aws_amplify_webhook" "deploy_hook" {
@@ -29,9 +51,9 @@ resource "aws_amplify_webhook" "deploy_hook" {
 }
 
 resource "null_resource" "trigger_amplify_deploy" {
-  triggers = {
-    deployment_time = timestamp() # Redeploy every time
-  }
+  # triggers = {
+  #   deployment_time = timestamp() # Redeploy every time
+  # }
 
   provisioner "local-exec" {
     command = <<EOT

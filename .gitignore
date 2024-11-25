@@ -1,7 +1,5 @@
 # Root Directory
 .env
-DS_Store
-iot-user_accessKeys.csv
 
 # Certificates
 certs/*.pem
@@ -9,8 +7,20 @@ certs/*.crt
 certs/*.key
 certs/*.txt
 
+# IoT Device
+/iot-device/esp_template
+/iot-device/esp32c3
+
 # Terraform
 /terraform/.terraform
 /terraform/.terraform.lock.hcl
 /terraform/terraform.tfstate
 /terraform/terraform.tfstate.backup
+
+# DS_Store (MacOS)
+.DS_Store
+api/.DS_Store
+certs/.DS_Store
+frontend/.DS_Store
+iot-device/.DS_Store
+terraform/.DS_Store
