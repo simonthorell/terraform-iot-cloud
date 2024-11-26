@@ -5,13 +5,13 @@
 Update device status using **Device Shadow**.
 Announce status on topic `$aws/things/<DEVICE-ID>/shadow/update`:
 
-```shell
+```json
 {
   "state": {
     "reported": {
       "device_id": "<DEVICE-ID>",
       "owner": "<OWNER-NAME>",
-      "status": "active" # or passive
+      "status": "active"
     }
   }
 }
