@@ -29,6 +29,13 @@ terraform apply -target=module.iot_core -auto-approve
 terraform apply -target=module.dynamodb -auto-approve
 ```
 
+To force re-upload new files, for example if re-compiling API code:
+
+```shell
+terraform taint module.lambda.aws_lambda_function.devices_lambda
+terraform apply
+```
+
 You sometimes need to destroy old versions if a deploy fails:
 
 ```bash

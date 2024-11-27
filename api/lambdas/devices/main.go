@@ -18,11 +18,7 @@ type IoTData struct {
 	Status   string `json:"status"`
 }
 
-type Request struct {
-	DeviceID string `json:"device_id"`
-}
-
-func handler(ctx context.Context, req Request) (interface{}, error) {
+func handler(ctx context.Context) (interface{}, error) {
 	tableName := os.Getenv("TABLE_NAME")
 	if tableName == "" {
 		return nil, fmt.Errorf("TABLE_NAME environment variable not set")
@@ -32,31 +28,21 @@ func handler(ctx context.Context, req Request) (interface{}, error) {
 	sess := session.Must(session.NewSession())
 	svc := dynamodb.New(sess)
 
-	// Define the query input parameters
-	input := &dynamodb.QueryInput{
+	// Define the scan input parameters
+	input := &dynamodb.ScanInput{
 		TableName: aws.String(tableName),
-		KeyConditions: map[string]*dynamodb.Condition{
-			"device_id": {
-				ComparisonOperator: aws.String("EQ"),
-				AttributeValueList: []*dynamodb.AttributeValue{
-					{
-						S: aws.String(req.DeviceID),
-					},
-				},
-			},
-		},
 	}
 
-	// Make the DynamoDB Query API call
-	result, err := svc.Query(input)
+	// Make the DynamoDB Scan API call
+	result, err := svc.Scan(input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query DynamoDB: %w", err)
+		return nil, fmt.Errorf("failed to scan DynamoDB: %w", err)
 	}
 
 	var items []IoTData
 	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &items)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal Query result items: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal Scan result items: %w", err)
 	}
 
 	return items, nil
