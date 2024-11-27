@@ -1,13 +1,12 @@
-<!-- components/site-sidebar/sidebar.vue -->
 <template>
   <aside class="w-48 p-6 bg-iotBlack text-iotGreen font-mono flex flex-col">
     <h2 class="text-3xl border-b border-iotGreen">Menu</h2>
     <ul class="mt-8 space-y-4 list-none">
-      <!-- Menu Items -->
       <li
         v-for="item in menuItems"
         :key="item"
         class="cursor-pointer text-2xl hover:text-iotGreenHover hover:font-bold"
+        @click="handleMenuClick(item)"
       >
         {{ item }}
       </li>
@@ -23,15 +22,24 @@
 </template>
 
 <script setup lang="ts">
+import { useContent } from "~/composables/useContent";
 import { useRouter } from "#app";
-const menuItems = ref(["Dashboard", "Devices", "Settings"]);
+
+const { setContent, componentsMap } = useContent();
+
+// Dynamically derive menu items from the keys of componentsMap
+const menuItems = Object.keys(componentsMap) as Array<
+  keyof typeof componentsMap
+>;
+
 const router = useRouter();
 
-const handleLogout = () => {
-  // Remove the auth token from cookies
-  useCookie("authToken").value = null;
+const handleMenuClick = (item: keyof typeof componentsMap) => {
+  setContent(item);
+};
 
-  // Redirect to the login page
-  router.push("/login");
+const handleLogout = () => {
+  useCookie("authToken").value = null; // Clear auth token
+  router.push("/login"); // Redirect to login
 };
 </script>

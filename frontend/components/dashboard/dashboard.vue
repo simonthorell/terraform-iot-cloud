@@ -2,7 +2,7 @@
 <template>
   <main class="flex-grow p-5 text-iotGreen font-mono">
     <h2 class="text-3xl mb-5">Live IoT Data</h2>
-    <div class="grid gap-5 pt-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       <!-- Temperature Meter -->
       <div class="bg-iotGray p-5 rounded-lg shadow-md shadow-iotGreen">
         <h3 class="text-center text-xl mb-5">Temperature</h3>

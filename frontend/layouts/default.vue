@@ -2,8 +2,8 @@
   <div class="header">
     <SiteSidebar />
     <div class="main-content">
-      <SiteHeader />
-      <SiteContent />
+      <SiteHeader class="px-8 pt-8" />
+      <SiteContent class="px-8 pb-8" />
     </div>
   </div>
 </template>
