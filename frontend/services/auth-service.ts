@@ -2,6 +2,7 @@ import {
     CognitoUserPool,
     CognitoUser,
     AuthenticationDetails,
+    CognitoUserAttribute
   } from "amazon-cognito-identity-js";
 
   // Generated output file from Terraform's AWS Cognito module
@@ -81,22 +82,54 @@ export const logout = (): Promise<void> => {
     });
   };
   
-  // Global Logout (Optional)
-  export const globalLogout = (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const cognitoUser = userPool.getCurrentUser();
-  
-      if (!cognitoUser) {
-        return reject(new Error("No user is currently signed in."));
-      }
-  
-      cognitoUser.globalSignOut({
-        onSuccess: () => {
-          resolve();
-        },
-        onFailure: (err) => {
-          reject(err);
-        },
-      });
+// Global Logout (Optional)
+export const globalLogout = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const cognitoUser = userPool.getCurrentUser();
+
+    if (!cognitoUser) {
+      return reject(new Error("No user is currently signed in."));
+    }
+
+    cognitoUser.globalSignOut({
+      onSuccess: () => {
+        resolve();
+      },
+      onFailure: (err) => {
+        reject(err);
+      },
     });
-  };
+  });
+};
+
+export const signUp = (username: string, email: string, password: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const attributes = [
+      new CognitoUserAttribute({ Name: "email", Value: email }),
+    ];
+
+    userPool.signUp(username, password, attributes, [], (err, result) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve();
+    });
+  });
+};
+
+export const confirmSignUp = (username: string, code: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const cognitoUser = new CognitoUser({
+      Username: username,
+      Pool: userPool,
+    });
+
+    cognitoUser.confirmRegistration(code, true, (err, result) => {
+      if (err) {
+        return reject(err);
+      }
+      console.log("Confirmation result:", result);
+      resolve();
+    });
+  });
+};
