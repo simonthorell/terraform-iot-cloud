@@ -14,8 +14,6 @@ provider "aws" {
 module "iot_core" {
   source                     = "./iot-core"
   thing_name                 = var.iot_thing_name
-  # dynamodb_table_names       = module.dynamodb.table_names
-  # lambda_role_arn            = module.iam.lambda_role_arn
   iot_rule_dynamodb_role_arn = module.iam.iot_rule_dynamodb_role_arn
 }
 
@@ -54,6 +52,12 @@ module "amplify" {
 module "cognito" {
   source     = "./cognito"
   aws_region = var.aws_region
+}
+
+module "api_gateway" {
+  source                     = "./api-gateway"
+  devices_function_arn       = module.lambda.devices_function_arn
+  aws_region                 = var.aws_region
 }
 
 #===================================================================
