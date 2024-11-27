@@ -51,6 +51,11 @@ module "amplify" {
   environment          = var.environment
 }
 
+module "cognito" {
+  source     = "./cognito"
+  aws_region = var.aws_region
+}
+
 #===================================================================
 # Resources
 #===================================================================

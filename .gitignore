@@ -6,6 +6,7 @@ certs/*.pem
 certs/*.crt
 certs/*.key
 certs/*.txt
+certs/*.json
 
 # IoT Device
 /iot-device/esp_template
