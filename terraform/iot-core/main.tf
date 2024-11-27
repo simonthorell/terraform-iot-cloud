@@ -120,26 +120,6 @@ resource "aws_iot_topic_rule" "iot_data_to_dynamodb" {
 }
 
 #===================================================================
-# IoT-Core Lambda Functions
-#===================================================================
-# Lambda Function (using Go compiled & zipped binary)
-resource "aws_lambda_function" "iot_data_lambda" {
-  filename         = "${path.root}/../api/dist/iot_data.zip"
-  function_name    = "iotDataFunction"
-  role             = var.lambda_role_arn
-  handler          = "main"
-  runtime          = "provided.al2"
-  timeout          = 10
-  memory_size      = 128
-
-  environment {
-    variables = {
-      TABLE_NAME = var.dynamodb_table_name
-    }
-  }
-}
-
-#===================================================================
 # IoT-Core Thing 'Device Shadow' Rules
 #===================================================================
 resource "aws_iot_topic_rule" "shadow_to_dynamodb" {

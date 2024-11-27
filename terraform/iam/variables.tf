@@ -1,9 +1,9 @@
 #===================================================================
 # IAM Variables
 #===================================================================
-variable "dynamodb_table_arn" {
-  type        = string
-  description = "ARN of the DynamoDB table"
+variable "dynamodb_table_arns" {
+  description = "List of ARNs for the DynamoDB tables that the Lambda function can access"
+  type        = list(string)
 }
 
 variable "s3_bucket_name" {

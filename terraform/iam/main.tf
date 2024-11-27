@@ -29,7 +29,7 @@ resource "aws_iam_policy" "iot_dynamodb_policy" {
           "dynamodb:PutItem"
         ],
         Effect   = "Allow",
-        Resource = var.dynamodb_table_arn
+        Resource = var.dynamodb_table_arns
       }
     ]
   })
@@ -73,7 +73,7 @@ resource "aws_iam_policy" "lambda_dynamodb_policy" {
           "dynamodb:Query"
         ],
         "Effect": "Allow",
-        "Resource": var.dynamodb_table_arn
+        "Resource": var.dynamodb_table_arns
       }
     ]
   })

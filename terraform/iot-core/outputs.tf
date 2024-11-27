@@ -20,7 +20,3 @@ output "certificate_id" {
   description = "The certificate ID"
   value       = aws_iot_certificate.iot_cert.id
 }
-
-output "lambda_function_arn" {
-  value = aws_lambda_function.iot_data_lambda.arn
-}

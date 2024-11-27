@@ -14,8 +14,8 @@ provider "aws" {
 module "iot_core" {
   source                     = "./iot-core"
   thing_name                 = var.iot_thing_name
-  dynamodb_table_name        = module.dynamodb.table_name
-  lambda_role_arn            = module.iam.lambda_role_arn
+  # dynamodb_table_names       = module.dynamodb.table_names
+  # lambda_role_arn            = module.iam.lambda_role_arn
   iot_rule_dynamodb_role_arn = module.iam.iot_rule_dynamodb_role_arn
 }
 
@@ -27,8 +27,14 @@ module "iam" {
   source               = "./iam"
   aws_account_id       = var.aws_account_id 
   aws_region           = var.aws_region
-  dynamodb_table_arn   = module.dynamodb.table_arn
+  dynamodb_table_arns  = module.dynamodb.table_arns
   s3_bucket_name       = module.s3.bucket_name
+}
+
+module "lambda" {
+  source               = "./lambda"
+  dynamodb_table_names = module.dynamodb.table_names
+  lambda_role_arn      = module.iam.lambda_role_arn
 }
 
 module "s3" {

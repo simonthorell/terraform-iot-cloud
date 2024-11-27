@@ -11,14 +11,14 @@ services:
       - TF_VAR_aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}
     volumes:
       - .:/workspace
-    working_dir: /workspace/terraform # Path to Terraform files
+    working_dir: /workspace/terraform
     entrypoint: ["/workspace/terraform/entrypoint.sh"]
 
   localstack:
     container_name: localstack
     image: localstack/localstack
     environment:
-      - SERVICES=iot,dynamodb,amplify # Mocked AWS services
+      - SERVICES=iot,dynamodb,amplify,s3,iam # Mock AWS services
       - DEFAULT_REGION=${AWS_DEFAULT_REGION}
     ports:
       - "4566:4566" # LocalStack gateway for AWS CLI & SDKs
@@ -67,4 +67,3 @@ services:
     stdin_open: true
     tty: true
     command: sh
-    # Open shell with: docker exec -it esp32_rust_dev bash
