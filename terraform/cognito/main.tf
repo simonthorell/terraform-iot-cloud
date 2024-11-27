@@ -4,6 +4,7 @@
 resource "aws_cognito_user_pool" "user_pool" {
   name = "iot_user_pool"
 
+  # Password policy configuration
   password_policy {
     minimum_length    = 8
     require_uppercase = true
@@ -12,31 +13,56 @@ resource "aws_cognito_user_pool" "user_pool" {
     require_symbols   = true
   }
 
+  # Admin user creation settings (optional)
   admin_create_user_config {
     allow_admin_create_user_only = false
   }
 
-  # Automatically verify email addresses by sending a verification code
-  auto_verified_attributes = ["email"] 
+  # Do not auto-verify additional attributes (like email)
+  auto_verified_attributes = []
 
+  # Optional email configuration
   email_configuration {
     email_sending_account = "COGNITO_DEFAULT"
   }
-
-  schema {
-    attribute_data_type = "String"
-    name                = "email"
-    required            = true
-    mutable             = false
-  }
-
-  schema {
-    attribute_data_type = "String"
-    name                = "name"
-    required            = false
-    mutable             = true
-  }
 }
+
+# resource "aws_cognito_user_pool" "user_pool" {
+#   name = "iot_user_pool"
+
+#   password_policy {
+#     minimum_length    = 8
+#     require_uppercase = true
+#     require_lowercase = true
+#     require_numbers   = true
+#     require_symbols   = true
+#   }
+
+#   admin_create_user_config {
+#     allow_admin_create_user_only = false
+#   }
+
+#   # Automatically verify email addresses by sending a verification code
+#   auto_verified_attributes = ["email"] 
+
+#   email_configuration {
+#     email_sending_account = "COGNITO_DEFAULT"
+#   }
+
+#   schema {
+#     attribute_data_type = "String"
+#     name                = "email"
+#     required            = true
+#     mutable             = false
+#   }
+
+#   schema {
+#     attribute_data_type = "String"
+#     name                = "name"
+#     required            = false
+#     mutable             = true
+#   }
+# }
 
 resource "aws_cognito_user_pool_client" "user_pool_client" {
   name                      = "my_user_pool_client"

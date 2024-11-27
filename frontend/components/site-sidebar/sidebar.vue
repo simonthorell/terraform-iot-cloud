@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { useContent } from "~/composables/useContent";
-import { useRouter } from "#app";
+import { logout } from "../../services/auth-service";
 
 const { setContent, componentsMap } = useContent();
 
@@ -32,14 +32,22 @@ const menuItems = Object.keys(componentsMap) as Array<
   keyof typeof componentsMap
 >;
 
-const router = useRouter();
-
 const handleMenuClick = (item: keyof typeof componentsMap) => {
   setContent(item);
 };
 
-const handleLogout = () => {
-  useCookie("authToken").value = null; // Clear auth token
-  router.push("/login"); // Redirect to login
+const handleLogout = async () => {
+  try {
+    await logout();
+    // Clear local session data
+    useCookie("authToken").value = null;
+    // Redirect to login page
+    window.location.href = "/login";
+  } catch (err) {
+    console.error("Logout failed:", err);
+    const errorMessage =
+      (err as Error).message || "Failed to log out. Please try again.";
+    alert(errorMessage);
+  }
 };
 </script>

@@ -10,4 +10,10 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+  vite: {
+    define: {
+      // Required for AWS Cognito SDK
+      global: {},
+    },
+  },
 })

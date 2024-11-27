@@ -37,6 +37,23 @@
           />
         </div>
 
+        <!-- New Password Field -->
+        <div>
+          <label
+            for="new-password"
+            class="block text-sm font-medium text-iotGreen mb-2"
+          >
+            New Password (if required)
+          </label>
+          <input
+            id="new-password"
+            v-model="newPassword"
+            type="password"
+            placeholder="Enter a new password"
+            class="w-full p-3 bg-iotBlack text-white rounded-md focus:outline-none focus:ring focus:ring-iotGreen"
+          />
+        </div>
+
         <!-- Submit Button -->
         <button
           type="submit"
@@ -56,23 +73,39 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { login } from "../services/auth-service";
+
 const username = ref("");
 const password = ref("");
+const newPassword = ref("");
 const router = useRouter();
 
 definePageMeta({
   layout: "clean",
 });
 
-const handleLogin = () => {
-  // Mock authentication
-  if (username.value === "admin" && password.value === "password") {
-    // Save token to cookie
-    useCookie("authToken").value = "mock_token";
-    // alert("Login successful!");
+const handleLogin = async () => {
+  try {
+    const idToken = await login(
+      username.value,
+      password.value,
+      newPassword.value
+    );
+
+    // Save token to a cookie
+    useCookie("authToken").value = idToken;
+
+    // Redirect to the home page
     router.push("/");
-  } else {
-    alert("Invalid credentials. Please try again.");
+  } catch (err) {
+    console.error("Login failed:", err);
+    if (err instanceof Error) {
+      alert(err.message || "Login failed. Please try again.");
+    } else {
+      alert("Login failed. Please try again.");
+    }
   }
 };
 </script>
