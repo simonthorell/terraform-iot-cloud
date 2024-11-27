@@ -136,19 +136,18 @@ resource "aws_iam_role_policy_attachment" "amplify_s3_policy_attachment" {
 # IoT-Core Device Shadow Policy
 #===================================================================
 resource "aws_iam_policy" "iot_shadow_update_policy" {
-  name        = "iot-shadow-update-policy"
-  description = "Policy to allow IoT devices to update their shadows"
+  name = "iotShadowUpdatePolicy"
 
   policy = <<-POLICY
     {
       "Version": "2012-10-17",
       "Statement": [
         {
-          "Effect": "Allow",
           "Action": [
             "iot:UpdateThingShadow",
             "iot:GetThingShadow"
           ],
+          "Effect": "Allow",
           "Resource": "arn:aws:iot:${var.aws_region}:${var.aws_account_id}:thing/*"
         }
       ]

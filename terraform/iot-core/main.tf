@@ -148,14 +148,13 @@ resource "aws_iot_topic_rule" "shadow_to_dynamodb" {
   enabled     = true
 
   sql_version = "2016-03-23"
-  sql = <<-SQL
-    SELECT
+  sql         = <<-SQL
+    SELECT 
       state.reported.device_id AS device_id,
       state.reported.owner AS owner,
-      state.reported.status AS status,
-      timestamp() AS timestamp
-    FROM
-      "$aws/things/+/shadow/update/documents"
+      state.reported.status AS status
+    FROM 
+      "$aws/things/+/shadow/update"
   SQL
 
   # DynamoDBv2 action to store the incoming data
