@@ -59,13 +59,8 @@ resource "aws_api_gateway_stage" "iot_api_stage" {
 # Output the API Gateway URLs to a file
 #===================================================================
 resource "local_file" "api_endpoints" {
-  filename = "${path.root}/../certs/api_endpoints.txt"
-  content  = <<EOT
-# API Gateway Endpoints
-
-- Base URL: ${aws_api_gateway_rest_api.iot_api.execution_arn}/${aws_api_gateway_stage.iot_api_stage.stage_name}
-
-Endpoints:
-- GET /devices: ${aws_api_gateway_rest_api.iot_api.execution_arn}/${aws_api_gateway_stage.iot_api_stage.stage_name}/devices
-EOT
+  filename = "${path.root}/../certs/api-endpoints.json"
+  content  = jsonencode({
+    GetDevices = "https://${aws_api_gateway_rest_api.iot_api.id}.execute-api.${var.aws_region}.amazonaws.com/${aws_api_gateway_stage.iot_api_stage.stage_name}/devices"
+  })
 }

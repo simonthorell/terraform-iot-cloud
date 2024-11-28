@@ -11,6 +11,7 @@ We will also directly rely on these outputed files for our client side UI code.
 
 ```text
 amplify_app_url.txt
+api-endpoints.json
 cognito-config.json
 iot_cert.pem
 iot_endpoint.txt
