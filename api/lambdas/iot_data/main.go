@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	// "encoding/json"
+	"encoding/json"
 	"fmt"
-	// "log"
 	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -24,10 +23,30 @@ type Request struct {
 	DeviceID string `json:"device_id"`
 }
 
-func handler(ctx context.Context, req Request) (interface{}, error) {
+type APIResponse struct {
+	StatusCode int               `json:"statusCode"`
+	Headers    map[string]string `json:"headers"`
+	Body       string            `json:"body"`
+}
+
+func handler(ctx context.Context, req Request) (APIResponse, error) {
+	// Validate request
+	if req.DeviceID == "" {
+		return APIResponse{
+			StatusCode: 400,
+			Headers:    map[string]string{"Content-Type": "application/json"},
+			Body:       `{"error": "Missing device_id in request"}`,
+		}, nil
+	}
+
+	// Get the table name from environment variables
 	tableName := os.Getenv("TABLE_NAME")
 	if tableName == "" {
-		return nil, fmt.Errorf("TABLE_NAME environment variable not set")
+		return APIResponse{
+			StatusCode: 500,
+			Headers:    map[string]string{"Content-Type": "application/json"},
+			Body:       `{"error": "Environment variable TABLE_NAME not set"}`,
+		}, nil
 	}
 
 	// Create DynamoDB client
@@ -49,19 +68,43 @@ func handler(ctx context.Context, req Request) (interface{}, error) {
 		},
 	}
 
-	// Make the DynamoDB Query API call
+	// Perform the DynamoDB Query
 	result, err := svc.Query(input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query DynamoDB: %w", err)
+		return APIResponse{
+			StatusCode: 500,
+			Headers:    map[string]string{"Content-Type": "application/json"},
+			Body:       fmt.Sprintf(`{"error": "Failed to query DynamoDB: %s"}`, err.Error()),
+		}, nil
 	}
 
+	// Unmarshal the query results into IoTData structs
 	var items []IoTData
 	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &items)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal Query result items: %w", err)
+		return APIResponse{
+			StatusCode: 500,
+			Headers:    map[string]string{"Content-Type": "application/json"},
+			Body:       fmt.Sprintf(`{"error": "Failed to unmarshal query results: %s"}`, err.Error()),
+		}, nil
 	}
 
-	return items, nil
+	// Marshal the results into a JSON string
+	responseBody, err := json.Marshal(items)
+	if err != nil {
+		return APIResponse{
+			StatusCode: 500,
+			Headers:    map[string]string{"Content-Type": "application/json"},
+			Body:       fmt.Sprintf(`{"error": "Failed to marshal response: %s"}`, err.Error()),
+		}, nil
+	}
+
+	// Return a successful response
+	return APIResponse{
+		StatusCode: 200,
+		Headers:    map[string]string{"Content-Type": "application/json"},
+		Body:       string(responseBody),
+	}, nil
 }
 
 func main() {

@@ -57,6 +57,7 @@ module "cognito" {
 module "api_gateway" {
   source                     = "./api-gateway"
   devices_function_arn       = module.lambda.devices_function_arn
+  iot_data_function_arn      = module.lambda.iot_data_function_arn
   aws_region                 = var.aws_region
 }
 

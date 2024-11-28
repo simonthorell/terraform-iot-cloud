@@ -4,7 +4,7 @@
 # Lambda Function (using Go compiled & zipped binary)
 resource "aws_lambda_function" "iot_data_lambda" {
   filename         = "${path.root}/../api/dist/iot_data.zip"
-  function_name    = "GetDeviceData"
+  function_name    = "GetIotData"
   role             = var.lambda_role_arn
   handler          = "main"
   runtime          = "provided.al2"
