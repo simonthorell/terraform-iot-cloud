@@ -16,5 +16,9 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Build the application for production
-RUN npm run build && npm run generate
+# Copy the entrypoint script and make it executable
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Use shellscript to build & zip the frontend
+ENTRYPOINT ["/app/entrypoint.sh"]

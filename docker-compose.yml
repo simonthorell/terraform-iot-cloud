@@ -31,10 +31,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./frontend/dist:/app/dist
-    command: > # Zip Nuxt3 SSR build for AWS Deployment
-      sh -c "
-      mkdir -p /app/dist && \
-      zip -r /app/dist/nuxt3-csr-build.zip .output/public"
 
   api:
     container_name: api
