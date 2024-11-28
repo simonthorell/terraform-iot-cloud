@@ -24,8 +24,8 @@ services:
       - "4566:4566" # LocalStack gateway for AWS CLI & SDKs
       - "4567:4567" # LocalStack S3
 
-  frontend:
-    container_name: frontend
+  nuxt-frontend:
+    container_name: nuxt-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile

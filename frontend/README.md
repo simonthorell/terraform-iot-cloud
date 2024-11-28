@@ -1,4 +1,27 @@
-# Nuxt Minimal Starter
+# IoT Frontend
+
+### Local Development
+
+```shell
+cd frontend
+npm install
+npm run dev # starts local dev server
+```
+
+### Build Static Production Site
+
+Move to root workspace directory and run:
+
+```shell
+docker-compose up --build nuxt-frontend
+```
+
+Deploy to AWS using Terraform:
+
+````shell
+
+
+# Nuxt Minimal Starter (Official README)
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
@@ -18,7 +41,7 @@ yarn install
 
 # bun
 bun install
-```
+````
 
 ## Development Server
 

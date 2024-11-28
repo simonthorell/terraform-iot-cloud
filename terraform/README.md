@@ -32,7 +32,24 @@ terraform apply -target=module.dynamodb -auto-approve
 To force re-upload new files, for example if re-compiling API code:
 
 ```shell
+# Lambda Compiled Zip
 terraform taint module.lambda.aws_lambda_function.devices_lambda
+
+# Frontend build Zip
+terraform taint module.s3.aws_s3_object.build_zip
+
+# Frontend Resources
+terraform taint module.api_gateway.local_file.api_endpoints
+terraform taint module.cognito.local_file.cognito_frontend_config
+# IoT-Device Resources
+terraform taint module.iot_core.local_file.iot_cert_pem
+terraform taint module.iot_core.local_file.iot_private_key
+terraform taint module.iot_core.local_file.iot_root_ca
+terraform taint module.iot_core.local_file.iot_endpoint_file
+# General output
+terraform taint module.amplify.local_file.amplify_url
+
+# Then Apply
 terraform apply
 ```
 

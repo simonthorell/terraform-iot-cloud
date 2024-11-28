@@ -50,7 +50,7 @@ resource "aws_cognito_user_pool_client" "user_pool_client" {
 }
 
 resource "local_file" "cognito_frontend_config" {
-  filename = "${path.root}/../certs/cognito-config.json"
+  filename = "${path.root}/../frontend/.config/cognito-config.json"
   content  = jsonencode({
     region            = var.aws_region
     userPoolId        = aws_cognito_user_pool.user_pool.id
@@ -60,4 +60,3 @@ resource "local_file" "cognito_frontend_config" {
     logoutUrl         = "http://localhost:3000/logout"
   })
 }
-

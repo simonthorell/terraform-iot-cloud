@@ -1,13 +1,6 @@
 # Root Directory
 .env
 
-# Certificates
-certs/*.pem
-certs/*.crt
-certs/*.key
-certs/*.txt
-certs/*.json
-
 # IoT Device
 /iot-device/esp_template
 /iot-device/esp32c3
@@ -17,6 +10,14 @@ certs/*.json
 /terraform/.terraform.lock.hcl
 /terraform/terraform.tfstate
 /terraform/terraform.tfstate.backup
+
+# Terraform Outputs
+iot-device/.certs/*.pem
+iot-device/.certs/*.crt
+iot-device/.certs/*.key
+iot-device/.certs/*.txt
+frontend/.config/*.json
+.amplify_url.txt
 
 # DS_Store (MacOS)
 .DS_Store

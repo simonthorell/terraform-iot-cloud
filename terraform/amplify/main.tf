@@ -65,3 +65,9 @@ resource "null_resource" "trigger_amplify_deploy" {
     EOT
   }
 }
+
+# Write the URL to file
+resource "local_file" "amplify_url" {
+  content  = aws_amplify_app.nuxt3_app.default_domain
+  filename = "${path.module}/../../.amplify_url.txt"
+}

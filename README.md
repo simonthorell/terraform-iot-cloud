@@ -79,6 +79,27 @@ Run the following commands to ensure Terraform can access AWS and configure reso
 docker-compose up --build terraform
 ```
 
+## Terraform Output Files
+
+Terraform generates several output files that are used for various tasks.
+
+### Generated Files
+
+```shell
+# root directory
+.amplify_app_url.txt
+
+# api/.certs
+iot_cert.pem
+iot_endpoint.txt
+iot_private_key.pem
+root_ca.pem
+
+# frontend/.config
+api-endpoints.json
+cognito-config.json
+```
+
 ## Development Environment
 
 This repository comes with a preconfigured docker-compose file that contains all the necessary images for local development.
