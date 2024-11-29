@@ -155,3 +155,23 @@ resource "aws_iam_policy" "iot_shadow_update_policy" {
     }
   POLICY
 }
+
+#===================================================================
+# API Gateway Lambda Invoke Policy
+#===================================================================
+resource "aws_iam_policy" "api_gateway_access_policy" {
+  name = "APIGatewayAccessPolicy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "execute-api:Invoke"
+        ],
+        Resource = "arn:aws:execute-api:eu-central-1:${var.aws_account_id}:*/*/*/devices"
+      }
+    ]
+  })
+}

@@ -33,8 +33,11 @@ func handler(ctx context.Context) (APIResponse, error) {
 	if tableName == "" {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    map[string]string{"Content-Type": "application/json"},
-			Body:       `{"error": "Environment variable TABLE_NAME not set"}`,
+			Headers: map[string]string{
+				"Content-Type":                "application/json",
+				"Access-Control-Allow-Origin": "*", // CORS header
+			},
+			Body: `{"error": "Environment variable TABLE_NAME not set"}`,
 		}, nil
 	}
 
@@ -73,16 +76,24 @@ func handler(ctx context.Context) (APIResponse, error) {
 	if err != nil {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    map[string]string{"Content-Type": "application/json"},
-			Body:       fmt.Sprintf(`{"error": "Failed to marshal response: %s"}`, err.Error()),
+			Headers: map[string]string{
+				"Content-Type":                "application/json",
+				"Access-Control-Allow-Origin": "*", // CORS header
+			},
+			Body: fmt.Sprintf(`{"error": "Failed to marshal response: %s"}`, err.Error()),
 		}, nil
 	}
 
 	// Return the success response
 	return APIResponse{
 		StatusCode: 200,
-		Headers:    map[string]string{"Content-Type": "application/json"},
-		Body:       string(responseBody),
+		Headers: map[string]string{
+			"Content-Type":                 "application/json",
+			"Access-Control-Allow-Origin":  "*",            // Allow all origins
+			"Access-Control-Allow-Methods": "GET, OPTIONS", // Allowed HTTP methods
+			"Access-Control-Allow-Headers": "Content-Type", // Allowed request headers
+		},
+		Body: string(responseBody),
 	}, nil
 }
 

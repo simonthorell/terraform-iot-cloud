@@ -37,11 +37,25 @@
 </template>
 
 <script setup lang="ts">
-const devices = ref([
-  { device_id: "D12345", owner: "Alice", status: "Online" },
-  { device_id: "D67890", owner: "Bob", status: "Offline" },
-  { device_id: "D11223", owner: "Charlie", status: "Online" },
-]);
+import { useApi } from "@/composables/useApi";
+
+// Define the Device type
+interface Device {
+  device_id: string;
+  owner: string;
+  status: string;
+}
+
+const {
+  data: devices,
+  loading,
+  error,
+  fetchData,
+} = useApi<Device>("GetDevices");
+
+onMounted(() => {
+  fetchData();
+});
 </script>
 
 <style scoped>
