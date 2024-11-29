@@ -93,7 +93,7 @@ const confirmPassword = ref("");
 const router = useRouter();
 
 definePageMeta({
-  layout: "clean",
+  layout: "auth",
 });
 
 const handleSignup = async () => {

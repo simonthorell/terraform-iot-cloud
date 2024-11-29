@@ -4,8 +4,8 @@ import Devices from "~/components/devices/devices.vue";
 
 // List of all components that can be displayed
 const componentsMap = {
-  Dashboard,
-  Devices
+  Dashboard: markRaw(Dashboard),
+  Devices: markRaw(Devices),
 };
 
 type ComponentKey = keyof typeof componentsMap;

@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import config from "../.config/api-endpoints.json"; 
+import config from "../.config/api-endpoints.json";
 
 // Generic composable for fetching data from an API
 export function useApi<T>(apiName: keyof typeof config) {
@@ -7,7 +7,8 @@ export function useApi<T>(apiName: keyof typeof config) {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  const fetchData = async () => {
+  // Function to fetch data with optional params
+  const fetchData = async (params?: Record<string, string>, options?: RequestInit) => {
     loading.value = true;
     error.value = null;
 
@@ -17,12 +18,19 @@ export function useApi<T>(apiName: keyof typeof config) {
         throw new Error(`API URL for ${apiName} not found in configuration.`);
       }
 
-      console.log(`Fetching data from: ${apiUrl}`);
-      const response = await fetch(apiUrl, {
-        method: "GET",
+      // Build query string if params are provided
+      const queryString = params
+        ? "?" + new URLSearchParams(params).toString()
+        : "";
+
+      // console.log(`Fetching data from: ${apiUrl}${queryString}`);
+      const response = await fetch(`${apiUrl}${queryString}`, {
+        method: "GET", // Default method
         headers: {
           "Content-Type": "application/json",
+          ...(options?.headers || {}), // Include additional headers if provided
         },
+        ...options, // Spread any other options (e.g., method, body)
       });
 
       if (!response.ok) {

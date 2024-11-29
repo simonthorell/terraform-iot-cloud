@@ -135,7 +135,7 @@ const mode = ref<"login" | "newPassword" | "verifyCode">("login");
 const router = useRouter();
 
 definePageMeta({
-  layout: "clean",
+  layout: "auth",
 });
 
 const handleSubmit = async () => {

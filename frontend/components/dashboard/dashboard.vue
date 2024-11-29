@@ -25,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+import { useApi } from "@/composables/useApi";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
@@ -35,6 +36,22 @@ const networkData = [5, 6, 8, 4, 7, 9, 6];
 const tempChart = ref(null);
 const humidityChart = ref(null);
 const networkChart = ref(null);
+
+// Define the Device type
+interface IotData {
+  device_id: string;
+  timestamp: string;
+  data: string;
+}
+
+const {
+  data: iot_data,
+  loading,
+  error,
+  fetchData,
+} = useApi<IotData>("GetIotData");
+
+fetchData({ device_id: "456" });
 
 onMounted(() => {
   if (tempChart.value) {
