@@ -20,3 +20,11 @@ variable "aws_region" {
   type        = string
   description = "The AWS region"
 }
+
+variable "api_gateway_resources" {
+  default = [
+    "devices",
+    "iot-data",
+    "sensors"
+  ]
+}

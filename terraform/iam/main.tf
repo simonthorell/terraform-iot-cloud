@@ -170,7 +170,9 @@ resource "aws_iam_policy" "api_gateway_access_policy" {
         Action = [
           "execute-api:Invoke"
         ],
-        Resource = "arn:aws:execute-api:eu-central-1:${var.aws_account_id}:*/*/*/devices"
+        Resource = [
+          for resource in var.api_gateway_resources : "arn:aws:execute-api:eu-central-1:${var.aws_account_id}:*/*/*/${resource}"
+        ]
       }
     ]
   })

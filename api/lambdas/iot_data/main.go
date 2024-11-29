@@ -16,11 +16,7 @@ import (
 type IoTData struct {
 	DeviceID  string `json:"device_id"`
 	Timestamp int64  `json:"timestamp"`
-	Data      string `json:"data"` // Additional data field, adjust as necessary
-}
-
-type Request struct {
-	DeviceID string `json:"device_id"`
+	Data      string `json:"data"`
 }
 
 type APIResponse struct {
@@ -29,13 +25,28 @@ type APIResponse struct {
 	Body       string            `json:"body"`
 }
 
-func handler(ctx context.Context, req Request) (APIResponse, error) {
-	// Validate request
-	if req.DeviceID == "" {
+func handler(ctx context.Context, event map[string]interface{}) (APIResponse, error) {
+	errorHeaders := map[string]string{
+		"Content-Type":                "application/json",
+		"Access-Control-Allow-Origin": "*", // Allow all origins for CORS
+	}
+
+	successHeaders := map[string]string{
+		"Content-Type":                     "application/json",
+		"Access-Control-Allow-Origin":      "*",
+		"Access-Control-Allow-Methods":     "GET, OPTIONS",
+		"Access-Control-Allow-Headers":     "Content-Type",
+		"Access-Control-Allow-Credentials": "true", // if needed
+	}
+
+	// Extract device_id from queryStringParameters
+	queryParams := event["queryStringParameters"].(map[string]interface{})
+	deviceID, ok := queryParams["device_id"].(string)
+	if !ok || deviceID == "" {
 		return APIResponse{
 			StatusCode: 400,
-			Headers:    map[string]string{"Content-Type": "application/json"},
-			Body:       `{"error": "Missing device_id in request"}`,
+			Headers:    errorHeaders,
+			Body:       `{"error": "Missing or invalid device_id in request"}`,
 		}, nil
 	}
 
@@ -44,7 +55,7 @@ func handler(ctx context.Context, req Request) (APIResponse, error) {
 	if tableName == "" {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    map[string]string{"Content-Type": "application/json"},
+			Headers:    errorHeaders,
 			Body:       `{"error": "Environment variable TABLE_NAME not set"}`,
 		}, nil
 	}
@@ -61,7 +72,7 @@ func handler(ctx context.Context, req Request) (APIResponse, error) {
 				ComparisonOperator: aws.String("EQ"),
 				AttributeValueList: []*dynamodb.AttributeValue{
 					{
-						S: aws.String(req.DeviceID),
+						S: aws.String(deviceID),
 					},
 				},
 			},
@@ -73,7 +84,7 @@ func handler(ctx context.Context, req Request) (APIResponse, error) {
 	if err != nil {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    map[string]string{"Content-Type": "application/json"},
+			Headers:    errorHeaders,
 			Body:       fmt.Sprintf(`{"error": "Failed to query DynamoDB: %s"}`, err.Error()),
 		}, nil
 	}
@@ -84,7 +95,7 @@ func handler(ctx context.Context, req Request) (APIResponse, error) {
 	if err != nil {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    map[string]string{"Content-Type": "application/json"},
+			Headers:    errorHeaders,
 			Body:       fmt.Sprintf(`{"error": "Failed to unmarshal query results: %s"}`, err.Error()),
 		}, nil
 	}
@@ -94,7 +105,7 @@ func handler(ctx context.Context, req Request) (APIResponse, error) {
 	if err != nil {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    map[string]string{"Content-Type": "application/json"},
+			Headers:    errorHeaders,
 			Body:       fmt.Sprintf(`{"error": "Failed to marshal response: %s"}`, err.Error()),
 		}, nil
 	}
@@ -102,7 +113,7 @@ func handler(ctx context.Context, req Request) (APIResponse, error) {
 	// Return a successful response
 	return APIResponse{
 		StatusCode: 200,
-		Headers:    map[string]string{"Content-Type": "application/json"},
+		Headers:    successHeaders,
 		Body:       string(responseBody),
 	}, nil
 }

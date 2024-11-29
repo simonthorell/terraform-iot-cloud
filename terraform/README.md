@@ -34,6 +34,7 @@ To force re-upload new files, for example if re-compiling API code:
 ```shell
 # Lambda Compiled Zip
 terraform taint module.lambda.aws_lambda_function.devices_lambda
+terraform taint module.lambda.aws_lambda_function.iot_data_lambda
 
 # Frontend build Zip
 terraform taint module.s3.aws_s3_object.build_zip

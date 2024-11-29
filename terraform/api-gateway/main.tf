@@ -99,7 +99,6 @@ resource "aws_api_gateway_integration" "options_devices_integration" {
   }
 }
 
-
 # Set up the Integration Response for OPTIONS method
 resource "aws_api_gateway_integration_response" "options_devices_integration_response" {
   rest_api_id = aws_api_gateway_rest_api.iot_api.id
@@ -130,7 +129,118 @@ resource "aws_lambda_permission" "get_devices_api_gateway_permission" {
 #===================================================================
 # API Gateway 'GetIotData' Endpoint
 #===================================================================
-# Todo...
+# Create a resource for the "iot-data" path
+resource "aws_api_gateway_resource" "iot_data_resource" {
+  rest_api_id = aws_api_gateway_rest_api.iot_api.id
+  parent_id   = aws_api_gateway_rest_api.iot_api.root_resource_id
+  path_part   = "iot-data"
+}
+
+# Create a GET method for the "iot-data" resource
+resource "aws_api_gateway_method" "get_iot_data_method" {
+  rest_api_id   = aws_api_gateway_rest_api.iot_api.id
+  resource_id   = aws_api_gateway_resource.iot_data_resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+
+  request_parameters = {
+    "method.request.querystring.device_id" = true
+  }
+}
+
+# Integrate GET method with Lambda
+resource "aws_api_gateway_integration" "get_iot_data_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.iot_api.id
+  resource_id             = aws_api_gateway_resource.iot_data_resource.id
+  http_method             = aws_api_gateway_method.get_iot_data_method.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${var.iot_data_function_arn}/invocations"
+
+  request_parameters = {
+    "integration.request.querystring.device_id" = "method.request.querystring.device_id"
+  }
+}
+
+# Add method responses for GET to include CORS headers
+resource "aws_api_gateway_method_response" "get_iot_data_response" {
+  rest_api_id = aws_api_gateway_rest_api.iot_api.id
+  resource_id = aws_api_gateway_resource.iot_data_resource.id
+  http_method = aws_api_gateway_method.get_iot_data_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+  }
+}
+
+# Add an OPTIONS method to handle CORS preflight requests
+resource "aws_api_gateway_method" "options_iot_data_method" {
+  rest_api_id   = aws_api_gateway_rest_api.iot_api.id
+  resource_id   = aws_api_gateway_resource.iot_data_resource.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+
+  request_parameters = {
+    "method.request.header.Access-Control-Allow-Origin"  = true
+    "method.request.header.Access-Control-Allow-Methods" = true
+    "method.request.header.Access-Control-Allow-Headers" = true
+  }
+}
+
+# Add CORS headers to the OPTIONS method response
+resource "aws_api_gateway_method_response" "options_iot_data_response" {
+  rest_api_id = aws_api_gateway_rest_api.iot_api.id
+  resource_id = aws_api_gateway_resource.iot_data_resource.id
+  http_method = aws_api_gateway_method.options_iot_data_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+  }
+}
+
+# Set up the Integration for OPTIONS method
+resource "aws_api_gateway_integration" "options_iot_data_integration" {
+  rest_api_id       = aws_api_gateway_rest_api.iot_api.id
+  resource_id       = aws_api_gateway_resource.iot_data_resource.id
+  http_method       = aws_api_gateway_method.options_iot_data_method.http_method
+  type              = "MOCK"
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# Set up the Integration Response for OPTIONS method
+resource "aws_api_gateway_integration_response" "options_iot_data_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.iot_api.id
+  resource_id = aws_api_gateway_resource.iot_data_resource.id
+  http_method = aws_api_gateway_method.options_iot_data_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,Authorization'"
+  }
+
+  depends_on = [
+    aws_api_gateway_integration.options_iot_data_integration
+  ]
+}
+
+# Allow permission for GET IotData to be invoked by API Gateway
+resource "aws_lambda_permission" "get_iot_data_api_gateway_permission" {
+  statement_id  = "AllowAPIGatewayInvokeGetIotData"
+  action        = "lambda:InvokeFunction"
+  function_name = var.iot_data_function_arn
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.iot_api.execution_arn}/*/*"
+}
 
 #===================================================================
 # Deploy the API Gateway
@@ -139,10 +249,17 @@ resource "aws_api_gateway_deployment" "iot_api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.iot_api.id
 
   depends_on = [
+    # Devices API Endpoint
     aws_api_gateway_method.options_devices_method,
     aws_api_gateway_integration.options_devices_integration,
     aws_api_gateway_method.get_devices_method,
     aws_api_gateway_integration.get_devices_integration,
+
+    # IotData API Endpoint
+    aws_api_gateway_method.options_iot_data_method,
+    aws_api_gateway_integration.options_iot_data_integration,
+    aws_api_gateway_method.get_iot_data_method,
+    aws_api_gateway_integration.get_iot_data_integration
   ]
 }
 
@@ -152,7 +269,6 @@ resource "aws_api_gateway_stage" "iot_api_stage" {
   rest_api_id   = aws_api_gateway_rest_api.iot_api.id
   stage_name    = "prod"
 }
-
 
 #===================================================================
 # Output the API Gateway URLs to a file
