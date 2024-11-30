@@ -50,8 +50,11 @@ _**TODO: Add timestamp in lambda?**_
 
 In case you need to build the firmware for other architectures, here is how can can generate Rust dev templates for various ESP32 boards.
 
+- General Info [ESP32 Rust Template](https://github.com/esp-rs/esp-idf-template)
 - Install [ESP IDF toolchain](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/linux-macos-setup.html#step-1-install-prerequisites)
 - Install [Prerequisites](https://github.com/esp-rs/esp-idf-template?tab=readme-ov-file#prerequisites)
+
+### Install Tools
 
 1. Install [Rustup](https://rustup.rs/)
 2. Install Packages using cargo
@@ -61,7 +64,7 @@ cargo install cargo-generate
 cargo install ldproxy
 cargo install espup
 cargo install espflash
-cargo install cargo-espflash # Optional
+cargo install cargo-espflash
 ```
 
 3. Create Rust [Template Project](https://github.com/esp-rs/esp-idf-template?tab=readme-ov-file)
@@ -70,3 +73,50 @@ cargo install cargo-espflash # Optional
 cd iot-device
 cargo generate esp-rs/esp-idf-template cargo
 ```
+
+### Notes
+
+**TODO:** Checkout this alternative template! /ST 2024-11-30
+
+- https://github.com/esp-rs/esp-generate
+- https://github.com/esp-rs/esp-generate#available-options
+
+# Compile Firmware Binary
+
+Use the pre-build image with docker-compose to compile without any need for any local dependencies:
+
+```shell
+docker-compose up --build esp32-rust
+```
+
+Alternative, install all cargo deps locally, and then run:
+
+```shell
+cd iot-device/esp32c3
+cargo build --release
+```
+
+# Flash Firmware
+
+### Option 1 - Flash from terminal
+
+List all usb devices on MacOS:
+
+```zsh
+ls /dev/tty.*
+```
+
+```shell
+cd iot-device/esp32c3
+espflash flash target/riscv32imc-esp-espidf/release/esp32c3
+# espflash flash target/<mcu-target>/debug/<your-project-name>
+
+# For monitoring, add the --montor flag:
+espflash flash target/riscv32imc-esp-espidf/release/esp32c3  --monitor
+```
+
+### Option 2 - Flash with web interface
+
+https://esp.huhn.me/
+
+Flash firmware to memory address 0x10000

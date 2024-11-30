@@ -60,10 +60,18 @@ If you use VS Code as your IDE, the following extensions are recommended to impr
 
 ```shell
 # AWS Credentials
-AWS_ACCOUNT_ID=your-account-id
-AWS_DEFAULT_REGION=aws-default-region
-AWS_ACCESS_KEY_ID=your-access-key-id
-AWS_SECRET_ACCESS_KEY=your-secret-access-key
+AWS_ACCOUNT_ID=your-account-id               # Replace!
+AWS_DEFAULT_REGION=aws-default-region        # Replace!
+AWS_ACCESS_KEY_ID=your-access-key-id         # Replace!
+AWS_SECRET_ACCESS_KEY=your-secret-access-key # Replace!
+
+# IoT Device Configuration
+THING_NAME=your-iot-device-name # Replace!
+WIFI_SSID=your-wifi-ssid         # Replace!
+WIFI_PASSWORD=your-wifi-password # Replace!
+MQTT_PORT=8883
+MQTT_PUB_TOPIC=/telemetry
+MQTT_SUB_TOPIC=/downlink
 ```
 
 5. Go to the [Billing and Cost Management dashboard](https://console.aws.amazon.com/costmanagement/), and follow these steps:
