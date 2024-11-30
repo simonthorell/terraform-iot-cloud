@@ -48,15 +48,28 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./certs/root_ca.pem:/certs/root_ca.pem
-      - ./certs/iot_cert.pem:/certs/iot_cert.pem
-      - ./certs/iot_private_key.pem:/certs/iot_private_key.pem
-      - ./certs/iot_endpoint.txt:/certs/iot_endpoint.txt
+      - ./iot-device/.certs/root_ca.pem:/certs/root_ca.pem
+      - ./iot-device/.certs/iot_cert.pem:/certs/iot_cert.pem
+      - ./iot-device/.certs/iot_private_key.pem:/certs/iot_private_key.pem
+      - ./iot-device/.certs/iot_endpoint.txt:/certs/iot_endpoint.txt
 
   esp32-rust:
     image: espressif/idf-rust:esp32c3_latest
     container_name: esp32c3_rust_dev
     working_dir: /workspace
+    environment:
+      - THING_NAME=${THING_NAME}
+      - WIFI_SSID=${WIFI_SSID}
+      - WIFI_PASSWORD=${WIFI_PASSWORD}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_PUB_TOPIC=${MQTT_PUB_TOPIC}
+      - MQTT_SUB_TOPIC=${MQTT_SUB_TOPIC}
     volumes:
       - ./iot-device/esp32c3:/workspace
-    command: sh -c "cargo build"
+      - ./iot-device/.certs/root_ca.pem:/certs/root_ca.pem
+      - ./iot-device/.certs/iot_cert.pem:/certs/iot_cert.pem
+      - ./iot-device/.certs/iot_private_key.pem:/certs/iot_private_key.pem
+      - ./iot-device/.certs/iot_endpoint.txt:/certs/iot_endpoint.txt
+    command: sh -c "cargo build --release"
+    # command: sh -c "cargo clean && cargo build --release"
+    # command: sh -c "tail -f /dev/null"
