@@ -1,38 +1,31 @@
 use core::time::Duration;
-
-use esp_idf_svc::mqtt::client::*;
-use esp_idf_svc::sys::EspError;
-// use esp_idf_svc::tls::configuration::TlsConfiguration;
-
 use log::*;
 
-// Constants
-// const MQTT_URL: &str = concat!("mqtts://", include_str!("/certs/iot_endpoint.txt"), ":8883");
+// MQTT
+use esp_idf_svc::mqtt::client::*;
+use esp_idf_svc::sys::EspError;
+
+// mTLS support for MQTT
+// use esp_idf_svc::tls::{self, EspTls, X509};
+// use std::ffi::CStr;
+// use esp_idf_svc::log::EspLogger;
+
 const MQTT_URL: &str = include_str!("/certs/iot_endpoint.txt");
 const MQTT_PORT: &str = env!("MQTT_PORT");
 const MQTT_CLIENT_ID: &str = env!("THING_NAME");
 const MQTT_TOPIC: &str = env!("MQTT_PUB_TOPIC");
 
-// Paths or contents of your TLS certificates
-// const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
-// const AWS_CERT_CRT: &str = include_str!("/certs/iot_cert.pem");
-// const AWS_CERT_PRIVATE: &str = include_str!("/certs/iot_private_key.pem");
+const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
+const AWS_CERT_CRT: &str = include_str!("/certs/iot_cert.pem");
+const AWS_CERT_PRIVATE: &str = include_str!("/certs/iot_private_key.pem");
 
 pub fn run(
     client: &mut EspMqttClient<'_>,
     connection: &mut EspMqttConnection,
-    // topic: &str,
 ) -> Result<(), EspError> {
     std::thread::scope(|s| {
         info!("About to start the MQTT client");
 
-        // Need to immediately start pumping the connection for messages, or else subscribe() and publish() below will not work
-        // Note that when using the alternative constructor - `EspMqttClient::new_cb` - you don't need to
-        // spawn a new thread, as the messages will be pumped with a backpressure into the callback you provide.
-        // Yet, you still need to efficiently process each message in the callback without blocking for too long.
-        //
-        // Note also that if you go to http://tools.emqx.io/ and then connect and send a message to topic
-        // "esp-mqtt-demo", the client configured here should receive it.
         std::thread::Builder::new()
             .stack_size(6000)
             .spawn_scoped(s, move || {
@@ -46,45 +39,75 @@ pub fn run(
             })
             .unwrap();
 
+        // Subscribe to all topics using the wildcard `#`
         loop {
             if let Err(e) = client.subscribe(MQTT_TOPIC, QoS::AtMostOnce) {
                 error!("Failed to subscribe to topic \"{MQTT_TOPIC}\": {e}, retrying...");
 
                 // Re-try in 0.5s
                 std::thread::sleep(Duration::from_millis(500));
-
                 continue;
             }
 
             info!("Subscribed to topic \"{MQTT_TOPIC}\"");
+            log::info!("Subscribed to topic \"{MQTT_TOPIC}\"");
 
-            // Just to give a chance of our connection to get even the first published message
+            // Sleep to ensure messages have a chance to arrive
             std::thread::sleep(Duration::from_millis(500));
 
             let payload = "Hello from esp-mqtt-demo!";
+            client.enqueue(MQTT_TOPIC, QoS::AtMostOnce, false, payload.as_bytes())?;
+            info!("Published \"{payload}\" to topic \"{MQTT_TOPIC}\"");
 
-            loop {
-                client.enqueue(MQTT_TOPIC, QoS::AtMostOnce, false, payload.as_bytes())?;
-
-                info!("Published \"{payload}\" to topic \"{MQTT_TOPIC}\"");
-
-                let sleep_secs = 2;
-
-                info!("Now sleeping for {sleep_secs}s...");
-                std::thread::sleep(Duration::from_secs(sleep_secs));
-            }
+            let sleep_secs = 2;
+            info!("Now sleeping for {sleep_secs}s...");
+            std::thread::sleep(Duration::from_secs(sleep_secs));
         }
     })
 }
 
 pub fn mqtt_create() -> Result<(EspMqttClient<'static>, EspMqttConnection), EspError> {
-    let full_mqtt_url = format!("mqtts://{}:{}", MQTT_URL.trim(), MQTT_PORT);
+    let full_mqtt_url = format!("mqtt://{}:{}", MQTT_URL.trim(), MQTT_PORT);
 
+    // let mut tls = EspTls::new()?;
+
+    // tls.connect(
+    //     MQTT_URL.trim(),
+    //     MQTT_PORT.parse::<u16>().unwrap_or(8883),
+    //     &tls::Config {
+    //         common_name: Some(MQTT_URL.trim()),
+    //         ca_cert: Some(X509::pem(
+    //             CStr::from_bytes_with_nul(AWS_CERT_CA.as_bytes()).unwrap(),
+    //         )),
+    //         client_cert: Some(X509::pem(
+    //             CStr::from_bytes_with_nul(AWS_CERT_CRT.as_bytes()).unwrap(),
+    //         )),
+    //         private_key: Some(X509::pem(
+    //             CStr::from_bytes_with_nul(AWS_CERT_PRIVATE.as_bytes()).unwrap(),
+    //         )),
+    //         ..Default::default()
+    //     },
+    // )?;
+
+    // // Configure MQTT with mTLS
+    // let (mqtt_client, mqtt_conn) = EspMqttClient::new(
+    //     &format!("mqtts://{}", full_mqtt_url),
+    //     &MqttClientConfiguration {
+    //         client_id: Some(MQTT_CLIENT_ID),
+    //         // Ensure TLS transport
+    //         // tls_configuration: Some(tls),
+    //         keep_alive_interval: std::time::Duration::from_secs(60),
+    //         ..Default::default()
+    //     },
+    // )?;
+
+    // Configure MQTT without mTLS
     let (mqtt_client, mqtt_conn) = EspMqttClient::new(
         &full_mqtt_url,
         &MqttClientConfiguration {
             client_id: Some(MQTT_CLIENT_ID),
-            // transport: Transport::Tls,
+            // Keep alive interval - TODO: Replace with main infinity loop!
+            keep_alive_interval: Some(std::time::Duration::from_secs(60)),
             ..Default::default()
         },
     )?;
