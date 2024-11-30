@@ -1,18 +1,9 @@
 // Modules
-// mod mqtt;
+mod mqtt;
 mod wifi;
 
 // Namespaces
 use esp_idf_svc::log::EspLogger;
-
-// Constants
-// const MQTT_URL: &str = include_str!("/certs/iot_endpoint.txt");
-// const MQTT_CLIENT_ID: &str = env!("THING_NAME");
-// const MQTT_TOPIC: &str = env!("MQTT_PUB_TOPIC");
-
-const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
-const AWS_CERT_CRT: &str = include_str!("/certs/iot_cert.pem");
-const AWS_CERT_PRIVATE: &str = include_str!("/certs/iot_private_key.pem");
 
 // fn main() {
 fn main() -> Result<(), anyhow::Error> {
@@ -21,26 +12,19 @@ fn main() -> Result<(), anyhow::Error> {
     // Initialize logger
     EspLogger::initialize_default();
 
-    log::info!("AWS Cert CA: {}", AWS_CERT_CA);
-    log::info!("AWS Cert CRT: {}", AWS_CERT_CRT);
-    log::info!("AWS Cert Private: {}", AWS_CERT_PRIVATE);
-
     // Connect WIFI
     log::info!("Connecting to wifi...");
-    // wifi::connect_to_wifi()?;
-    let wifi = wifi::connect_to_wifi()?; // `wifi` is now the `BlockingWifi` object
+    // wifi::connect_to_wifi()?; // Use this for prod fw
+    let wifi = wifi::connect_to_wifi()?;
 
-    // Access IP Information
+    // DEV DEBUG: Access IP Information & and shout out presence on the network over UDP
     let ip_info = wifi.wifi().sta_netif().get_ip_info()?;
     log::info!("Wi-Fi IP info: {:?}", ip_info);
-
-    // Shout out presence on the network!
     broadcast_presence()?;
 
-    // Start MQTT client
-    // let (mut client, mut conn) = mqtt::mqtt_create(MQTT_URL, MQTT_CLIENT_ID).unwrap();
-    // mqtt::run(&mut client, &mut conn, MQTT_TOPIC).unwrap();
-    // log::info!("MQTT client started");
+    // Create & Run MQTT client and connection
+    let (mut client, mut conn) = mqtt::mqtt_create()?;
+    mqtt::run(&mut client, &mut conn)?;
 
     Ok(()) // Return `Ok` for success
 }

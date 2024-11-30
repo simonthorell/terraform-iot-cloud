@@ -2,13 +2,26 @@ use core::time::Duration;
 
 use esp_idf_svc::mqtt::client::*;
 use esp_idf_svc::sys::EspError;
+// use esp_idf_svc::tls::configuration::TlsConfiguration;
 
 use log::*;
+
+// Constants
+// const MQTT_URL: &str = concat!("mqtts://", include_str!("/certs/iot_endpoint.txt"), ":8883");
+const MQTT_URL: &str = include_str!("/certs/iot_endpoint.txt");
+const MQTT_PORT: &str = env!("MQTT_PORT");
+const MQTT_CLIENT_ID: &str = env!("THING_NAME");
+const MQTT_TOPIC: &str = env!("MQTT_PUB_TOPIC");
+
+// Paths or contents of your TLS certificates
+// const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
+// const AWS_CERT_CRT: &str = include_str!("/certs/iot_cert.pem");
+// const AWS_CERT_PRIVATE: &str = include_str!("/certs/iot_private_key.pem");
 
 pub fn run(
     client: &mut EspMqttClient<'_>,
     connection: &mut EspMqttConnection,
-    topic: &str,
+    // topic: &str,
 ) -> Result<(), EspError> {
     std::thread::scope(|s| {
         info!("About to start the MQTT client");
@@ -34,8 +47,8 @@ pub fn run(
             .unwrap();
 
         loop {
-            if let Err(e) = client.subscribe(topic, QoS::AtMostOnce) {
-                error!("Failed to subscribe to topic \"{topic}\": {e}, retrying...");
+            if let Err(e) = client.subscribe(MQTT_TOPIC, QoS::AtMostOnce) {
+                error!("Failed to subscribe to topic \"{MQTT_TOPIC}\": {e}, retrying...");
 
                 // Re-try in 0.5s
                 std::thread::sleep(Duration::from_millis(500));
@@ -43,7 +56,7 @@ pub fn run(
                 continue;
             }
 
-            info!("Subscribed to topic \"{topic}\"");
+            info!("Subscribed to topic \"{MQTT_TOPIC}\"");
 
             // Just to give a chance of our connection to get even the first published message
             std::thread::sleep(Duration::from_millis(500));
@@ -51,9 +64,9 @@ pub fn run(
             let payload = "Hello from esp-mqtt-demo!";
 
             loop {
-                client.enqueue(topic, QoS::AtMostOnce, false, payload.as_bytes())?;
+                client.enqueue(MQTT_TOPIC, QoS::AtMostOnce, false, payload.as_bytes())?;
 
-                info!("Published \"{payload}\" to topic \"{topic}\"");
+                info!("Published \"{payload}\" to topic \"{MQTT_TOPIC}\"");
 
                 let sleep_secs = 2;
 
@@ -64,14 +77,14 @@ pub fn run(
     })
 }
 
-pub fn mqtt_create(
-    url: &str,
-    client_id: &str,
-) -> Result<(EspMqttClient<'static>, EspMqttConnection), EspError> {
+pub fn mqtt_create() -> Result<(EspMqttClient<'static>, EspMqttConnection), EspError> {
+    let full_mqtt_url = format!("mqtts://{}:{}", MQTT_URL.trim(), MQTT_PORT);
+
     let (mqtt_client, mqtt_conn) = EspMqttClient::new(
-        url,
+        &full_mqtt_url,
         &MqttClientConfiguration {
-            client_id: Some(client_id),
+            client_id: Some(MQTT_CLIENT_ID),
+            // transport: Transport::Tls,
             ..Default::default()
         },
     )?;
