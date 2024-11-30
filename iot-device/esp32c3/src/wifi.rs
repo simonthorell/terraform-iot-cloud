@@ -12,7 +12,8 @@ const SSID: &str = env!("WIFI_SSID");
 const PASSWORD: &str = env!("WIFI_PASSWORD");
 
 // Function to set up and connect to Wi-Fi
-pub fn connect_to_wifi() -> anyhow::Result<()> {
+// pub fn connect_to_wifi() -> anyhow::Result<()> {
+pub fn connect_to_wifi() -> anyhow::Result<BlockingWifi<EspWifi<'static>>> {
     let peripherals = Peripherals::take()?;
     let sys_loop = EspSystemEventLoop::take()?;
     let nvs = EspDefaultNvsPartition::take()?;
@@ -45,5 +46,6 @@ pub fn connect_to_wifi() -> anyhow::Result<()> {
     let ip_info = wifi.wifi().sta_netif().get_ip_info()?;
     info!("Wi-Fi IP info: {:?}", ip_info);
 
-    Ok(())
+    // Ok(())
+    Ok(wifi) // Return the `BlockingWifi` instance
 }
