@@ -45,3 +45,28 @@ _**TODO: Add timestamp in lambda?**_
   "humidity": 50
 }
 ```
+
+# Setup New ESP32 Rust Project
+
+In case you need to build the firmware for other architectures, here is how can can generate Rust dev templates for various ESP32 boards.
+
+- Install [ESP IDF toolchain](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/linux-macos-setup.html#step-1-install-prerequisites)
+- Install [Prerequisites](https://github.com/esp-rs/esp-idf-template?tab=readme-ov-file#prerequisites)
+
+1. Install [Rustup](https://rustup.rs/)
+2. Install Packages using cargo
+
+```shell
+cargo install cargo-generate
+cargo install ldproxy
+cargo install espup
+cargo install espflash
+cargo install cargo-espflash # Optional
+```
+
+3. Create Rust [Template Project](https://github.com/esp-rs/esp-idf-template?tab=readme-ov-file)
+
+```shell
+cd iot-device
+cargo generate esp-rs/esp-idf-template cargo
+```

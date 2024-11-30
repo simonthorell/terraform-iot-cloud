@@ -55,11 +55,8 @@ services:
 
   esp32-rust:
     image: espressif/idf-rust:esp32c3_latest
-    container_name: esp32_rust_dev
+    container_name: esp32c3_rust_dev
     working_dir: /workspace
     volumes:
-      - ./iot-device/esp-template:/workspace
-      - ./certs:/workspace/certs
-    stdin_open: true
-    tty: true
-    command: sh
+      - ./iot-device/esp32c3:/workspace
+    command: sh -c "cargo build"

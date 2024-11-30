@@ -2,8 +2,7 @@
 .env
 
 # IoT Device
-/iot-device/esp_template
-/iot-device/esp32c3
+/iot-device/.old
 
 # Terraform
 /terraform/.terraform

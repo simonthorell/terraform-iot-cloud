@@ -37,6 +37,8 @@ If you use VS Code as your IDE, the following extensions are recommended to impr
 
 6. **[Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)**
 
+7. **[Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml)**
+
 ## Setup AWS Account
 
 1. Create [AWS](https://console.aws.amazon.com/) Account.
