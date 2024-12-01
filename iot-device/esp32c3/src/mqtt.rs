@@ -1,4 +1,5 @@
 use core::time::Duration;
+use esp_idf_sys::*; // ESP_FAIL
 use log::*;
 
 // MQTT
@@ -16,8 +17,8 @@ const OWNER_NAME: &str = env!("OWNER_NAME");
 
 const MQTT_URL: &str = include_str!("/certs/iot_endpoint.txt");
 const MQTT_PORT: &str = env!("MQTT_PORT");
-const MQTT_SUB_TOPIC: &str = env!("MQTT_SUB_TOPIC");
 const MQTT_PUB_TOPIC: &str = env!("MQTT_PUB_TOPIC");
+const MQTT_SUB_TOPIC: &str = env!("MQTT_SUB_TOPIC");
 
 const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
 const AWS_CERT_CRT: &str = include_str!("/certs/iot_cert.pem");
@@ -27,11 +28,17 @@ pub fn run(
     client: &mut EspMqttClient<'_>,
     connection: &mut EspMqttConnection,
 ) -> Result<(), EspError> {
-    std::thread::scope(|s| {
-        info!("About to start the MQTT client");
+    let should_exit = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let should_exit_clone = should_exit.clone();
 
+    let result: Result<(), Option<EspError>> = std::thread::scope(|s| {
+        info!("About to start the MQTT client");
         info!("Device ID: {}", DEVICE_ID);
         info!("Owner Name: {}", OWNER_NAME);
+
+        // Create device specific topics for publishing and subscribing
+        let device_pub_topic = format!("{}/{}", DEVICE_ID, MQTT_PUB_TOPIC);
+        let device_sub_topic = format!("{}/{}", DEVICE_ID, MQTT_SUB_TOPIC);
 
         // Spawn a separate thread to handle incoming messages
         std::thread::Builder::new()
@@ -40,45 +47,90 @@ pub fn run(
                 info!("MQTT Listening for messages");
 
                 while let Ok(event) = connection.next() {
+                    match event.payload() {
+                        EventPayload::Disconnected => {
+                            should_exit_clone.store(true, std::sync::atomic::Ordering::Relaxed);
+                            break;
+                        }
+                        // EventPayload::Received { data, details } => {
+                        //     info!(
+                        //         "Received message on topic '{}': {}",
+                        //         details.topic,
+                        //         String::from_utf8_lossy(data)
+                        //     );
+                        // }
+                        _ => info!("Unhandled event: {:?}", event.payload()),
+                    }
+
                     info!("[Queue] Event: {}", event.payload());
                 }
 
-                info!("Connection closed");
+                info!("MQTT Connection closed");
             })
             .unwrap();
 
-        // Report connected status to AWS device shadow
-        report_connected(client);
+        // Report connected to device shadow
+        report_status(client, true);
 
         // Main loop: handle both publishing and subscribing
         loop {
-            // Subscribe to a topic
-            if let Err(e) = client.subscribe(MQTT_SUB_TOPIC, QoS::AtMostOnce) {
-                error!("Failed to subscribe to topic \"{MQTT_SUB_TOPIC}\": {e}, retrying...");
-                std::thread::sleep(Duration::from_millis(500));
-                continue;
+            // If the connection is closed, exit the loop
+            if should_exit.load(std::sync::atomic::Ordering::Relaxed) {
+                error!("MQTT connection error detected, exiting loop");
+                return Err(EspError::from(ESP_FAIL)); // Ensure the error propagates
             }
-            info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
+
+            // Subscribe to a topic
+            if let Err(e) = client.subscribe(&device_sub_topic, QoS::AtMostOnce) {
+                report_status(client, false);
+                error!("Failed to subscribe to topic \"{device_sub_topic}\": {e}, retrying...");
+            } else {
+                info!("Subscribed to topic \"{device_sub_topic}\"");
+            }
 
             // Publish a message
-            let payload = r#"{"device_id": "Hello from esp-mqtt-demo!"}"#;
-            match client.enqueue(MQTT_PUB_TOPIC, QoS::AtMostOnce, false, payload.as_bytes()) {
+            let payload = format!(
+                r#"{{
+                    "device_id": "{}",
+                    "timestamp": 1693851730,
+                    "temperature": 23,
+                    "humidity": 50
+                }}"#,
+                DEVICE_ID
+            );
+
+            match client.enqueue(
+                &device_pub_topic,
+                QoS::AtMostOnce,
+                false,
+                payload.as_bytes(),
+            ) {
                 Ok(_) => {
-                    info!("Successfully published \"{payload}\" to topic \"{MQTT_PUB_TOPIC}\"");
+                    info!("Successfully published \"{payload}\" to topic \"{device_pub_topic}\"");
                 }
                 Err(e) => {
-                    error!("Failed to publish to topic \"{MQTT_PUB_TOPIC}\": {e}, retrying...");
-                    std::thread::sleep(Duration::from_millis(500));
-                    continue;
+                    report_status(client, false);
+                    error!("Failed to publish to topic \"{device_pub_topic}\": {e}, retrying...");
                 }
             }
 
             // Sleep to give time for events and avoid tight looping
-            let sleep_secs = 2;
-            info!("Now sleeping for {sleep_secs}s before the next publish/subscribe cycle...");
-            std::thread::sleep(Duration::from_secs(sleep_secs));
+            std::thread::sleep(Duration::from_secs(2));
+            // info!("Now sleeping for {sleep_secs}s before the next publish/subscribe cycle...");
         }
-    })
+    });
+
+    // Return the result of the thread scope
+    match result {
+        Ok(_) => Ok(()),
+        Err(Some(e)) => Err(e), // EspError
+        Err(None) => {
+            let fallback_error = EspError::from_non_zero(
+                std::num::NonZeroI32::new(ESP_FAIL).expect("ESP_FAIL must be non-zero"),
+            );
+            Err(fallback_error)
+        }
+    }
 }
 
 pub fn mqtt_create() -> Result<(EspMqttClient<'static>, EspMqttConnection), EspError> {
@@ -117,8 +169,13 @@ pub fn mqtt_create() -> Result<(EspMqttClient<'static>, EspMqttConnection), EspE
     Ok((mqtt_client, mqtt_conn))
 }
 
-fn report_connected(client: &mut EspMqttClient<'_>) {
+fn report_status(client: &mut EspMqttClient<'_>, connected: bool) {
     let update_shadow_topic = format!("$aws/things/{}/shadow/update", DEVICE_ID);
+    let status = if connected {
+        "connected"
+    } else {
+        "disconnected"
+    };
 
     // JSON payload with device status
     let payload = format!(
@@ -127,11 +184,11 @@ fn report_connected(client: &mut EspMqttClient<'_>) {
                 "reported": {{
                     "device_id": "{}",
                     "owner": "{}",
-                    "status": "connected"
+                    "status": "{}"
                 }}
             }}
         }}"#,
-        DEVICE_ID, OWNER_NAME
+        DEVICE_ID, OWNER_NAME, status
     );
 
     match client.enqueue(
@@ -149,5 +206,4 @@ fn report_connected(client: &mut EspMqttClient<'_>) {
             // continue;
         }
     }
-    info!("Reported connected to MQTT broker");
 }
