@@ -13,7 +13,7 @@ use esp_idf_svc::sys::EspError;
 const MQTT_URL: &str = include_str!("/certs/iot_endpoint.txt");
 const MQTT_PORT: &str = env!("MQTT_PORT");
 const MQTT_CLIENT_ID: &str = env!("THING_NAME");
-// const MQTT_SUB_TOPIC: &str = env!("MQTT_SUB_TOPIC");
+const MQTT_SUB_TOPIC: &str = env!("MQTT_SUB_TOPIC");
 const MQTT_PUB_TOPIC: &str = env!("MQTT_PUB_TOPIC");
 
 // const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
@@ -27,6 +27,7 @@ pub fn run(
     std::thread::scope(|s| {
         info!("About to start the MQTT client");
 
+        // Spawn a separate thread to handle incoming messages
         std::thread::Builder::new()
             .stack_size(6000)
             .spawn_scoped(s, move || {
@@ -40,10 +41,18 @@ pub fn run(
             })
             .unwrap();
 
+        // Main loop: handle both publishing and subscribing
         loop {
-            let payload = "Hello from esp-mqtt-demo!";
+            // Subscribe to a topic
+            if let Err(e) = client.subscribe(MQTT_SUB_TOPIC, QoS::AtMostOnce) {
+                error!("Failed to subscribe to topic \"{MQTT_SUB_TOPIC}\": {e}, retrying...");
+                std::thread::sleep(Duration::from_millis(500));
+                continue;
+            }
+            info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
 
-            // Attempt to publish the message
+            // Publish a message
+            let payload = "Hello from esp-mqtt-demo!";
             match client.enqueue(MQTT_PUB_TOPIC, QoS::AtMostOnce, false, payload.as_bytes()) {
                 Ok(_) => {
                     info!("Successfully published \"{payload}\" to topic \"{MQTT_PUB_TOPIC}\"");
@@ -55,36 +64,11 @@ pub fn run(
                 }
             }
 
-            // Sleep interval before publishing the next message
+            // Sleep to give time for events and avoid tight looping
             let sleep_secs = 2;
-            info!("Now sleeping for {sleep_secs}s before the next publish...");
+            info!("Now sleeping for {sleep_secs}s before the next publish/subscribe cycle...");
             std::thread::sleep(Duration::from_secs(sleep_secs));
         }
-
-        // Subscribe and print messages
-        // loop {
-        //     if let Err(e) = client.subscribe(MQTT_SUB_TOPIC, QoS::AtMostOnce) {
-        //         error!("Failed to subscribe to topic \"{MQTT_SUB_TOPIC}\": {e}, retrying...");
-
-        //         // Re-try in 0.5s
-        //         std::thread::sleep(Duration::from_millis(500));
-        //         continue;
-        //     }
-
-        //     info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
-        //     log::info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
-
-        //     // Sleep to ensure messages have a chance to arrive
-        //     std::thread::sleep(Duration::from_millis(500));
-
-        //     let payload = "Hello from esp-mqtt-demo!";
-        //     client.enqueue(MQTT_SUB_TOPIC, QoS::AtMostOnce, false, payload.as_bytes())?;
-        //     info!("Published \"{payload}\" to topic \"{MQTT_SUB_TOPIC}\"");
-
-        //     let sleep_secs = 2;
-        //     info!("Now sleeping for {sleep_secs}s...");
-        //     std::thread::sleep(Duration::from_secs(sleep_secs));
-        // }
     })
 }
 
@@ -92,7 +76,6 @@ pub fn mqtt_create() -> Result<(EspMqttClient<'static>, EspMqttConnection), EspE
     let full_mqtt_url = format!("mqtt://{}:{}", MQTT_URL.trim(), MQTT_PORT);
 
     // let mut tls = EspTls::new()?;
-
     // tls.connect(
     //     MQTT_URL.trim(),
     //     MQTT_PORT.parse::<u16>().unwrap_or(8883),
@@ -128,8 +111,7 @@ pub fn mqtt_create() -> Result<(EspMqttClient<'static>, EspMqttConnection), EspE
         &full_mqtt_url,
         &MqttClientConfiguration {
             client_id: Some(MQTT_CLIENT_ID),
-            // Keep alive interval - TODO: Replace with main infinity loop!
-            keep_alive_interval: Some(std::time::Duration::from_secs(60)),
+            keep_alive_interval: Some(Duration::from_secs(60)),
             ..Default::default()
         },
     )?;
