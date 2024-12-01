@@ -13,8 +13,8 @@ use esp_idf_svc::sys::EspError;
 const MQTT_URL: &str = include_str!("/certs/iot_endpoint.txt");
 const MQTT_PORT: &str = env!("MQTT_PORT");
 const MQTT_CLIENT_ID: &str = env!("THING_NAME");
-const MQTT_SUB_TOPIC: &str = env!("MQTT_SUB_TOPIC");
-// const MQTT_PUB_TOPIC: &str = env!("MQTT_PUB_TOPIC");
+// const MQTT_SUB_TOPIC: &str = env!("MQTT_SUB_TOPIC");
+const MQTT_PUB_TOPIC: &str = env!("MQTT_PUB_TOPIC");
 
 // const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
 // const AWS_CERT_CRT: &str = include_str!("/certs/iot_cert.pem");
@@ -40,50 +40,51 @@ pub fn run(
             })
             .unwrap();
 
-        // loop {
-        //     let payload = "Hello from Sweden esp-mqtt-demo!";
+        loop {
+            let payload = "Hello from esp-mqtt-demo!";
 
-        //     // Attempt to publish the message
-        //     if let Err(e) = client.enqueue(MQTT_SUB_TOPIC QoS::AtMostOnce, false, payload.as_bytes()) {
-        //         error!("Failed to publish to topic \"MQTT_SUB_TOPIC}\": {e}, retrying...");
+            // Attempt to publish the message
+            match client.enqueue(MQTT_PUB_TOPIC, QoS::AtMostOnce, false, payload.as_bytes()) {
+                Ok(_) => {
+                    info!("Successfully published \"{payload}\" to topic \"{MQTT_PUB_TOPIC}\"");
+                }
+                Err(e) => {
+                    error!("Failed to publish to topic \"{MQTT_PUB_TOPIC}\": {e}, retrying...");
+                    std::thread::sleep(Duration::from_millis(500));
+                    continue;
+                }
+            }
+
+            // Sleep interval before publishing the next message
+            let sleep_secs = 2;
+            info!("Now sleeping for {sleep_secs}s before the next publish...");
+            std::thread::sleep(Duration::from_secs(sleep_secs));
+        }
+
+        // Subscribe and print messages
+        // loop {
+        //     if let Err(e) = client.subscribe(MQTT_SUB_TOPIC, QoS::AtMostOnce) {
+        //         error!("Failed to subscribe to topic \"{MQTT_SUB_TOPIC}\": {e}, retrying...");
 
         //         // Re-try in 0.5s
         //         std::thread::sleep(Duration::from_millis(500));
         //         continue;
         //     }
 
+        //     info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
+        //     log::info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
+
+        //     // Sleep to ensure messages have a chance to arrive
+        //     std::thread::sleep(Duration::from_millis(500));
+
+        //     let payload = "Hello from esp-mqtt-demo!";
+        //     client.enqueue(MQTT_SUB_TOPIC, QoS::AtMostOnce, false, payload.as_bytes())?;
         //     info!("Published \"{payload}\" to topic \"{MQTT_SUB_TOPIC}\"");
 
-        //     // Sleep interval before publishing the next message
         //     let sleep_secs = 2;
-        //     info!("Now sleeping for {sleep_secs}s before the next publish...");
+        //     info!("Now sleeping for {sleep_secs}s...");
         //     std::thread::sleep(Duration::from_secs(sleep_secs));
         // }
-
-        // Subscribe and print messages
-        loop {
-            if let Err(e) = client.subscribe(MQTT_SUB_TOPIC, QoS::AtMostOnce) {
-                error!("Failed to subscribe to topic \"{MQTT_SUB_TOPIC}\": {e}, retrying...");
-
-                // Re-try in 0.5s
-                std::thread::sleep(Duration::from_millis(500));
-                continue;
-            }
-
-            info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
-            log::info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
-
-            // Sleep to ensure messages have a chance to arrive
-            std::thread::sleep(Duration::from_millis(500));
-
-            let payload = "Hello from esp-mqtt-demo!";
-            client.enqueue(MQTT_SUB_TOPIC, QoS::AtMostOnce, false, payload.as_bytes())?;
-            info!("Published \"{payload}\" to topic \"{MQTT_SUB_TOPIC}\"");
-
-            let sleep_secs = 2;
-            info!("Now sleeping for {sleep_secs}s...");
-            std::thread::sleep(Duration::from_secs(sleep_secs));
-        }
     })
 }
 
