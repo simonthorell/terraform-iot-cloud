@@ -1,7 +1,7 @@
 // Modules
 mod mqtt;
-mod wifi;
-// mod utils; // Debug utilities
+mod utils;
+mod wifi; // Debug utilities
 
 // Namespaces
 use anyhow::Error;
@@ -14,8 +14,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     loop {
         log::info!("Connecting to Wi-Fi...");
-        // let mut wifi = match wifi::connect_to_wifi() {
-        match wifi::connect_to_wifi() {
+        let wifi = match wifi::connect_to_wifi() {
             Ok(wifi) => wifi,
             Err(e) => {
                 log::error!("Failed to connect to Wi-Fi: {:?}", e);
@@ -24,6 +23,11 @@ fn main() -> Result<(), anyhow::Error> {
                 continue;
             }
         };
+
+        // Log Wi-Fi IP info
+        let ip_info = wifi.wifi().sta_netif().get_ip_info()?;
+        log::info!("Wi-Fi IP info: {:?}", ip_info);
+        utils::broadcast_presence()?;
 
         log::info!("Wi-Fi connected. Starting MQTT client...");
         match mqtt::mqtt_create() {
