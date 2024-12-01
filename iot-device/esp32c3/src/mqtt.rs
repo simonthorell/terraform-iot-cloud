@@ -10,12 +10,12 @@ use esp_idf_svc::sys::EspError;
 // use std::ffi::CStr;
 // use esp_idf_svc::log::EspLogger;
 
+const DEVICE_ID: &str = env!("DEVICE_ID");
 const MQTT_URL: &str = include_str!("/certs/iot_endpoint.txt");
 const MQTT_PORT: &str = env!("MQTT_PORT");
 const MQTT_CLIENT_ID: &str = env!("THING_NAME");
 const MQTT_SUB_TOPIC: &str = env!("MQTT_SUB_TOPIC");
 const MQTT_PUB_TOPIC: &str = env!("MQTT_PUB_TOPIC");
-
 // const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
 // const AWS_CERT_CRT: &str = include_str!("/certs/iot_cert.pem");
 // const AWS_CERT_PRIVATE: &str = include_str!("/certs/iot_private_key.pem");

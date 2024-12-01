@@ -58,7 +58,7 @@ services:
     container_name: esp32c3_rust_dev
     working_dir: /workspace
     environment:
-      - THING_NAME=${THING_NAME}
+      - DEVICE_ID=${DEVICE_ID}
       - WIFI_SSID=${WIFI_SSID}
       - WIFI_PASSWORD=${WIFI_PASSWORD}
       - MQTT_PORT=${MQTT_PORT}
