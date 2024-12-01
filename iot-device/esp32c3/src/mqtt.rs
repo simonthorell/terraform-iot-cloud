@@ -6,19 +6,22 @@ use esp_idf_svc::mqtt::client::*;
 use esp_idf_svc::sys::EspError;
 
 // mTLS support for MQTT
-// use esp_idf_svc::tls::{self, EspTls, X509};
-// use std::ffi::CStr;
-// use esp_idf_svc::log::EspLogger;
+use esp_idf_svc::tls::X509;
+use once_cell::sync::Lazy;
+use std::ffi::CString;
 
-const DEVICE_ID: &str = env!("DEVICE_ID");
+// Namespaces
+use esp_idf_svc::log::EspLogger;
+
 const MQTT_URL: &str = include_str!("/certs/iot_endpoint.txt");
 const MQTT_PORT: &str = env!("MQTT_PORT");
-const MQTT_CLIENT_ID: &str = env!("THING_NAME");
+const MQTT_CLIENT_ID: &str = env!("DEVICE_ID");
 const MQTT_SUB_TOPIC: &str = env!("MQTT_SUB_TOPIC");
 const MQTT_PUB_TOPIC: &str = env!("MQTT_PUB_TOPIC");
-// const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
-// const AWS_CERT_CRT: &str = include_str!("/certs/iot_cert.pem");
-// const AWS_CERT_PRIVATE: &str = include_str!("/certs/iot_private_key.pem");
+
+const AWS_CERT_CA: &str = include_str!("/certs/root_ca.pem");
+const AWS_CERT_CRT: &str = include_str!("/certs/iot_cert.pem");
+const AWS_CERT_PRIVATE: &str = include_str!("/certs/iot_private_key.pem");
 
 pub fn run(
     client: &mut EspMqttClient<'_>,
@@ -44,15 +47,16 @@ pub fn run(
         // Main loop: handle both publishing and subscribing
         loop {
             // Subscribe to a topic
-            if let Err(e) = client.subscribe(MQTT_SUB_TOPIC, QoS::AtMostOnce) {
-                error!("Failed to subscribe to topic \"{MQTT_SUB_TOPIC}\": {e}, retrying...");
-                std::thread::sleep(Duration::from_millis(500));
-                continue;
-            }
-            info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
+            // if let Err(e) = client.subscribe(MQTT_SUB_TOPIC, QoS::AtMostOnce) {
+            //     error!("Failed to subscribe to topic \"{MQTT_SUB_TOPIC}\": {e}, retrying...");
+            //     std::thread::sleep(Duration::from_millis(500));
+            //     continue;
+            // }
+            // info!("Subscribed to topic \"{MQTT_SUB_TOPIC}\"");
 
             // Publish a message
-            let payload = "Hello from esp-mqtt-demo!";
+            // let payload = "Hello from esp-mqtt-demo!";
+            let payload = r#"{"device_id": "Hello from esp-mqtt-demo!"}"#;
             match client.enqueue(MQTT_PUB_TOPIC, QoS::AtMostOnce, false, payload.as_bytes()) {
                 Ok(_) => {
                     info!("Successfully published \"{payload}\" to topic \"{MQTT_PUB_TOPIC}\"");
@@ -73,44 +77,33 @@ pub fn run(
 }
 
 pub fn mqtt_create() -> Result<(EspMqttClient<'static>, EspMqttConnection), EspError> {
-    let full_mqtt_url = format!("mqtt://{}:{}", MQTT_URL.trim(), MQTT_PORT);
+    let full_mqtt_url = format!("mqtts://{}:{}", MQTT_URL.trim(), MQTT_PORT);
+    log::info!("FULL MQTT URL: {}", full_mqtt_url);
 
-    // let mut tls = EspTls::new()?;
-    // tls.connect(
-    //     MQTT_URL.trim(),
-    //     MQTT_PORT.parse::<u16>().unwrap_or(8883),
-    //     &tls::Config {
-    //         common_name: Some(MQTT_URL.trim()),
-    //         ca_cert: Some(X509::pem(
-    //             CStr::from_bytes_with_nul(AWS_CERT_CA.as_bytes()).unwrap(),
-    //         )),
-    //         client_cert: Some(X509::pem(
-    //             CStr::from_bytes_with_nul(AWS_CERT_CRT.as_bytes()).unwrap(),
-    //         )),
-    //         private_key: Some(X509::pem(
-    //             CStr::from_bytes_with_nul(AWS_CERT_PRIVATE.as_bytes()).unwrap(),
-    //         )),
-    //         ..Default::default()
-    //     },
-    // )?;
+    // Store PEM certificates as static CStrings to extend their lifetime
+    static CA_CERT: Lazy<CString> =
+        Lazy::new(|| CString::new(AWS_CERT_CA).expect("CA cert conversion failed"));
+    static CLIENT_CERT: Lazy<CString> =
+        Lazy::new(|| CString::new(AWS_CERT_CRT).expect("Client cert conversion failed"));
+    static CLIENT_KEY: Lazy<CString> =
+        Lazy::new(|| CString::new(AWS_CERT_PRIVATE).expect("Private key conversion failed"));
 
-    // // Configure MQTT with mTLS
-    // let (mqtt_client, mqtt_conn) = EspMqttClient::new(
-    //     &format!("mqtts://{}", full_mqtt_url),
-    //     &MqttClientConfiguration {
-    //         client_id: Some(MQTT_CLIENT_ID),
-    //         // Ensure TLS transport
-    //         // tls_configuration: Some(tls),
-    //         keep_alive_interval: std::time::Duration::from_secs(60),
-    //         ..Default::default()
-    //     },
-    // )?;
+    // Log certificates before configuring MQTT
+    // info!("CA_CERT: {:?}", CA_CERT.as_c_str());
+    // info!("CLIENT_CERT: {:?}", CLIENT_CERT.as_c_str());
+    // info!("CLIENT_KEY: {:?}", CLIENT_KEY.as_c_str());
 
-    // Configure MQTT without mTLS
+    // Configure MQTT with mTLS
     let (mqtt_client, mqtt_conn) = EspMqttClient::new(
-        &full_mqtt_url,
+        &format!("{}", full_mqtt_url),
         &MqttClientConfiguration {
             client_id: Some(MQTT_CLIENT_ID),
+
+            // mTLS certificates
+            server_certificate: Some(X509::pem(CA_CERT.as_c_str())),
+            client_certificate: Some(X509::pem(CLIENT_CERT.as_c_str())),
+            private_key: Some(X509::pem(CLIENT_KEY.as_c_str())),
+
             keep_alive_interval: Some(Duration::from_secs(60)),
             ..Default::default()
         },
