@@ -26,28 +26,13 @@ type APIResponse struct {
 }
 
 func handler(ctx context.Context, event map[string]interface{}) (APIResponse, error) {
-	errorHeaders := map[string]string{
-		"Content-Type":                "application/json",
-		"Access-Control-Allow-Origin": "*", // Allow all origins for CORS
-	}
-
-	successHeaders := map[string]string{
+	// Common headers
+	headers := map[string]string{
 		"Content-Type":                     "application/json",
-		"Access-Control-Allow-Origin":      "*",
+		"Access-Control-Allow-Origin":      "*", // Allow all origins for CORS
 		"Access-Control-Allow-Methods":     "GET, OPTIONS",
 		"Access-Control-Allow-Headers":     "Content-Type",
-		"Access-Control-Allow-Credentials": "true", // if needed
-	}
-
-	// Extract device_id from queryStringParameters
-	queryParams := event["queryStringParameters"].(map[string]interface{})
-	deviceID, ok := queryParams["device_id"].(string)
-	if !ok || deviceID == "" {
-		return APIResponse{
-			StatusCode: 400,
-			Headers:    errorHeaders,
-			Body:       `{"error": "Missing or invalid device_id in request"}`,
-		}, nil
+		"Access-Control-Allow-Credentials": "true", // If needed
 	}
 
 	// Get the table name from environment variables
@@ -55,7 +40,7 @@ func handler(ctx context.Context, event map[string]interface{}) (APIResponse, er
 	if tableName == "" {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    errorHeaders,
+			Headers:    headers,
 			Body:       `{"error": "Environment variable TABLE_NAME not set"}`,
 		}, nil
 	}
@@ -64,39 +49,29 @@ func handler(ctx context.Context, event map[string]interface{}) (APIResponse, er
 	sess := session.Must(session.NewSession())
 	svc := dynamodb.New(sess)
 
-	// Define the query input parameters
-	input := &dynamodb.QueryInput{
+	// Define the Scan input parameters
+	input := &dynamodb.ScanInput{
 		TableName: aws.String(tableName),
-		KeyConditions: map[string]*dynamodb.Condition{
-			"device_id": {
-				ComparisonOperator: aws.String("EQ"),
-				AttributeValueList: []*dynamodb.AttributeValue{
-					{
-						S: aws.String(deviceID),
-					},
-				},
-			},
-		},
 	}
 
-	// Perform the DynamoDB Query
-	result, err := svc.Query(input)
+	// Perform the DynamoDB Scan
+	result, err := svc.Scan(input)
 	if err != nil {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    errorHeaders,
-			Body:       fmt.Sprintf(`{"error": "Failed to query DynamoDB: %s"}`, err.Error()),
+			Headers:    headers,
+			Body:       fmt.Sprintf(`{"error": "Failed to scan DynamoDB: %s"}`, err.Error()),
 		}, nil
 	}
 
-	// Unmarshal the query results into IoTData structs
+	// Unmarshal the scan results into IoTData structs
 	var items []IoTData
 	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &items)
 	if err != nil {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    errorHeaders,
-			Body:       fmt.Sprintf(`{"error": "Failed to unmarshal query results: %s"}`, err.Error()),
+			Headers:    headers,
+			Body:       fmt.Sprintf(`{"error": "Failed to unmarshal scan results: %s"}`, err.Error()),
 		}, nil
 	}
 
@@ -105,7 +80,7 @@ func handler(ctx context.Context, event map[string]interface{}) (APIResponse, er
 	if err != nil {
 		return APIResponse{
 			StatusCode: 500,
-			Headers:    errorHeaders,
+			Headers:    headers,
 			Body:       fmt.Sprintf(`{"error": "Failed to marshal response: %s"}`, err.Error()),
 		}, nil
 	}
@@ -113,7 +88,7 @@ func handler(ctx context.Context, event map[string]interface{}) (APIResponse, er
 	// Return a successful response
 	return APIResponse{
 		StatusCode: 200,
-		Headers:    successHeaders,
+		Headers:    headers,
 		Body:       string(responseBody),
 	}, nil
 }
