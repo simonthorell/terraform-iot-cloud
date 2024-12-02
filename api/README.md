@@ -38,11 +38,16 @@ docker-compose up --build terraform
 # Open a new terminal:
 docker exec -it terraform /bin/bash
 terraform taint module.lambda.aws_lambda_function.<NAME_OF_YOUR_LAMBDA>
-terraform taint module.api_gateway.local_file.api_endpoints
+# Examples:
+terraform taint module.lambda.aws_lambda_function.devices_lambda
+terraform taint module.lambda.aws_lambda_function.iot_data_lambda
+
+# Apply Change
 terraform apply
 
 # Api-Gateway
-# Do we need to re-apply ???
+# In rare occasions - reset Gateway (use with causion!)
+terraform taint module.api_gateway.local_file.api_endpoints
 
 # Rebuild Frontend if API-endpoint changed
 # docker-compose up --build nuxt-frontend

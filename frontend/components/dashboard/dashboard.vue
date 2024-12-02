@@ -28,19 +28,16 @@ import { useApi } from "@/composables/useApi";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
-const temperatureData = [22, 23, 21, 24, 26, 27, 25];
-const humidityData = [45, 48, 46, 50, 52, 49, 47];
-const networkData = [5, 6, 8, 4, 7, 9, 6];
-
 const tempChart = ref(null);
 const humidityChart = ref(null);
 const networkChart = ref(null);
 
-// Define the Device type
+// Define the Device typee
 interface IotData {
   device_id: string;
-  timestamp: Number;
-  data: string;
+  timestamp: number;
+  temperature: number;
+  humidity: number;
 }
 
 const {
@@ -51,21 +48,26 @@ const {
 } = useApi<IotData>("GetIotData");
 
 onMounted(async () => {
-  await fetchData();
-  console.log("IoT Data:", iot_data.value);
+  await fetchData(); // Wait until iot_data is fetched
+  // console.log("IoT Data:", iot_data.value);
+
+  // Extract real data
+  const labels = iot_data.value.map((item) =>
+    new Date(Number(item.timestamp) * 1000).toLocaleTimeString()
+  );
+  const temperatureData = iot_data.value.map((item) => item.temperature || 0);
+  const humidityData = iot_data.value.map((item) => item.humidity || 0);
+  const networkData = iot_data.value.map((item) => 0); // If network exists
 
   if (tempChart.value) {
     new Chart(tempChart.value as HTMLCanvasElement, {
       type: "line",
       data: {
-        labels: Array.from(
-          { length: temperatureData.length },
-          (_, i) => `T${i + 1}`
-        ),
+        labels, // Use real timestamps
         datasets: [
           {
             label: "Temperature (°C)",
-            data: temperatureData,
+            data: temperatureData, // Use real temperature data
             borderColor: "#00ff00",
             backgroundColor: "rgba(0, 255, 0, 0.2)",
           },
@@ -79,14 +81,11 @@ onMounted(async () => {
     new Chart(humidityChart.value as HTMLCanvasElement, {
       type: "line",
       data: {
-        labels: Array.from(
-          { length: humidityData.length },
-          (_, i) => `H${i + 1}`
-        ),
+        labels, // Use real timestamps
         datasets: [
           {
             label: "Humidity (%)",
-            data: humidityData,
+            data: humidityData, // Use real humidity data
             borderColor: "#00ff00",
             backgroundColor: "rgba(0, 255, 0, 0.2)",
           },
@@ -100,14 +99,11 @@ onMounted(async () => {
     new Chart(networkChart.value as HTMLCanvasElement, {
       type: "bar",
       data: {
-        labels: Array.from(
-          { length: networkData.length },
-          (_, i) => `N${i + 1}`
-        ),
+        labels, // Use real timestamps
         datasets: [
           {
             label: "Network (kB/s)",
-            data: networkData,
+            data: networkData, // Use real network data
             backgroundColor: "#00ff00",
           },
         ],
