@@ -1,4 +1,24 @@
 services:
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    environment:
+      - CORS_ORIGIN=${CORS_ORIGIN}
+    volumes:
+      - ./api/dist:/dist
+
+  nuxt-frontend:
+    container_name: nuxt-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT}
+    volumes:
+      - ./frontend/dist:/app/dist
+
   terraform:
     container_name: terraform
     build:
@@ -9,49 +29,11 @@ services:
       - TF_VAR_aws_region=${AWS_DEFAULT_REGION}
       - TF_VAR_aws_access_key_id=${AWS_ACCESS_KEY_ID}
       - TF_VAR_aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}
+      - TF_VAR_environment=${ENVIRONMENT} # TODO: Implement...
     volumes:
       - .:/workspace
     working_dir: /workspace/terraform
     entrypoint: ["/workspace/terraform/entrypoint.sh"]
-
-  localstack:
-    container_name: localstack
-    image: localstack/localstack
-    environment:
-      - SERVICES=iot,dynamodb,amplify,s3,iam # Mock AWS services
-      - DEFAULT_REGION=${AWS_DEFAULT_REGION}
-    ports:
-      - "4566:4566" # LocalStack gateway for AWS CLI & SDKs
-      - "4567:4567" # LocalStack S3
-
-  nuxt-frontend:
-    container_name: nuxt-frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    volumes:
-      - ./frontend/dist:/app/dist
-
-  api:
-    container_name: api
-    build:
-      context: .
-      dockerfile: ./api/Dockerfile
-    volumes:
-      - ./api/dist:/dist
-
-  iot-client:
-    container_name: iot-client
-    build:
-      context: .
-      dockerfile: ./iot-device/virtual-device/Dockerfile
-    environment:
-      - PYTHONUNBUFFERED=1
-    volumes:
-      - ./iot-device/.certs/root_ca.pem:/certs/root_ca.pem
-      - ./iot-device/.certs/iot_cert.pem:/certs/iot_cert.pem
-      - ./iot-device/.certs/iot_private_key.pem:/certs/iot_private_key.pem
-      - ./iot-device/.certs/iot_endpoint.txt:/certs/iot_endpoint.txt
 
   esp32-rust:
     image: espressif/idf-rust:esp32c3_latest
@@ -74,3 +56,26 @@ services:
     command: sh -c "cargo build --release"
     # command: sh -c "cargo clean && cargo build --release"
     # command: sh -c "tail -f /dev/null"
+
+  localstack:
+    container_name: localstack
+    image: localstack/localstack
+    environment:
+      - SERVICES=iot,dynamodb,amplify,s3,iam # Mock AWS services
+      - DEFAULT_REGION=${AWS_DEFAULT_REGION}
+    ports:
+      - "4566:4566" # LocalStack gateway for AWS CLI & SDKs
+      - "4567:4567" # LocalStack S3
+
+  iot-client:
+    container_name: iot-client
+    build:
+      context: .
+      dockerfile: ./iot-device/virtual-device/Dockerfile
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./iot-device/.certs/root_ca.pem:/certs/root_ca.pem
+      - ./iot-device/.certs/iot_cert.pem:/certs/iot_cert.pem
+      - ./iot-device/.certs/iot_private_key.pem:/certs/iot_private_key.pem
+      - ./iot-device/.certs/iot_endpoint.txt:/certs/iot_endpoint.txt

@@ -29,49 +29,44 @@ terraform apply -target=module.iot_core -auto-approve
 terraform apply -target=module.dynamodb -auto-approve
 ```
 
-To force re-upload new files, for example if re-compiling API code:
+### Changing Files Require Terraform Taint
+
+To force re-upload new files, for example if re-compiling API code, we need to taint the files.
 
 ```shell
 # Lambda Compiled Zip
 terraform taint module.lambda.aws_lambda_function.devices_lambda
 terraform taint module.lambda.aws_lambda_function.iot_data_lambda
 
+# Update Endpoint Json
+terraform taint module.api_gateway.local_file.api_endpoints
+
 # Frontend build Zip
 terraform taint module.s3.aws_s3_object.build_zip
+# Note! If we recompile API, we may also need to rebuild frontend!
 
 # Frontend Resources
 terraform taint module.api_gateway.local_file.api_endpoints
 terraform taint module.cognito.local_file.cognito_frontend_config
+
 # IoT-Device Resources
 terraform taint module.iot_core.local_file.iot_cert_pem
 terraform taint module.iot_core.local_file.iot_private_key
 terraform taint module.iot_core.local_file.iot_root_ca
 terraform taint module.iot_core.local_file.iot_endpoint_file
+
 # General output
 terraform taint module.amplify.local_file.amplify_url
+```
 
-# Then Apply
+After we taint - we must apply!
+
+```shell
 terraform apply
 ```
 
-You sometimes need to destroy old versions if a deploy fails:
+You also sometimes need to destroy old versions if a deploy fails:
 
 ```bash
 terraform destroy -target=module.amplify
 ```
-
-### Update Device Shadow State
-
-Post to topic `$aws/things/iot-device/shadow/update`:
-
-```mqtt
-{
-  "state": {
-    "reported": {
-      "connected": true
-    }
-  }
-}
-```
-
-Link: [AWS Docs](https://docs.aws.amazon.com/iot/latest/developerguide/device-shadow-mqtt.html?icmpid=docs_iot_hp_manage_things)
