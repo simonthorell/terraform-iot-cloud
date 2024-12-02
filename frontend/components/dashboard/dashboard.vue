@@ -8,7 +8,6 @@
         <h3 class="text-center text-xl mb-5">Temperature</h3>
         <canvas ref="tempChart"></canvas>
       </div>
-
       <!-- Humidity Meter -->
       <div class="bg-iotGray p-5 rounded-lg shadow-md shadow-iotGreen">
         <h3 class="text-center text-xl mb-5">Humidity</h3>
@@ -40,7 +39,7 @@ const networkChart = ref(null);
 // Define the Device type
 interface IotData {
   device_id: string;
-  timestamp: string;
+  timestamp: Number;
   data: string;
 }
 
@@ -51,9 +50,10 @@ const {
   fetchData,
 } = useApi<IotData>("GetIotData");
 
-fetchData({ device_id: "456" });
+onMounted(async () => {
+  await fetchData();
+  console.log("IoT Data:", iot_data.value);
 
-onMounted(() => {
   if (tempChart.value) {
     new Chart(tempChart.value as HTMLCanvasElement, {
       type: "line",
