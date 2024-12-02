@@ -42,7 +42,7 @@ const {
 
 onMounted(async () => {
   await fetchData(); // Wait until iot_data is fetched
-  // console.log("IoT Data:", iot_data.value);
+  console.log("IoT Data:", iot_data.value);
 
   // Extract real data
   const labels = iot_data.value.map((item) =>

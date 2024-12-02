@@ -14,10 +14,10 @@ import (
 )
 
 type IoTData struct {
-	DeviceID    string `json:"device_id"`
-	Timestamp   int64  `json:"timestamp"`
-	Temperature int64  `json:"temperature"`
-	Humidity    int64  `json:"humidity"`
+	DeviceID    string  `json:"device_id"`
+	Timestamp   int64   `json:"timestamp"`
+	Temperature float64 `json:"temperature"`
+	Humidity    float64 `json:"humidity"`
 }
 
 type APIResponse struct {
