@@ -12,7 +12,7 @@ with open('/certs/iot_endpoint.txt', 'r') as file:
 # MQTT settings
 MQTT_ENDPOINT = iot_endpoint
 MQTT_PORT = 8883
-MQTT_TOPIC = "iot/data"
+MQTT_TOPIC = "279/telemetry"
 CA_CERT = "/certs/root_ca.pem"
 CLIENT_CERT = "/certs/iot_cert.pem"
 CLIENT_KEY = "/certs/iot_private_key.pem"
@@ -30,45 +30,16 @@ def on_connect(client, userdata, flags, rc):
         print(f"Failed to connect with code {rc}")
 
 
-# Initializing starting points for metrics
-initial_operating_hours = 5271.2  # Starting total operating hours
-initial_driving_distance = 1314.6  # Starting total driving distance in km
-initial_runtime = 0.0  # Current runtime in hours since start
-
-# Set incremental values for each interval
-operating_hours_increment = DATA_INTERVAL / 3600.0  # Increase by X seconds in hours
-driving_distance_increment = 0.1  # Increase by 0.1 km (6 km/h average speed in 5 seconds)
-runtime_increment = DATA_INTERVAL / 3600.0  # Increase by X seconds in hours for runtime
-
-
+# Data Generation
 def generate_iot_data():
-    global initial_operating_hours, initial_driving_distance, initial_runtime
-
-    # Increment the metrics realistically
-    initial_operating_hours += operating_hours_increment
-    initial_driving_distance += driving_distance_increment
-    initial_runtime += runtime_increment
-
-    # Reset runtime if it reaches a realistic daily limit
-    if initial_runtime > 24.0:  # Assuming daily restarts
-        initial_runtime = 0.0
-
-    # Generating data dictionary with realistic increments
+    """Generate IoT data for publishing."""
     data = {
-        "engine_temperature":
-        round(85.0 + (initial_runtime * 1.5) + random.uniform(-4.0, 4.0),
-              2),  # Add temp fluctuation
-        "engine_oil_pressure":
-        round(50.0 - (initial_runtime * 0.2) + random.uniform(-3.0, 3.0),
-              2),  # Add pressure fluctuation
-        "total_operating_hours":
-        round(initial_operating_hours, 2),
-        "total_driving_distance":
-        round(initial_driving_distance, 2),
-        "current_runtime":
-        round(initial_runtime, 2),
-        "timestamp":
-        int(time.time())  # Current timestamp in UNIX format
+        "device_id": "279",  # Device ID
+        "timestamp": int(time.time()),  # Current UNIX timestamp
+        "temperature": round(20.0 + random.uniform(-30.0, 30.0),
+                             2),  # Temperature in °C
+        "humidity": round(40.0 + random.uniform(-30.0, 30.0),
+                          2),  # Humidity in %
     }
     return data
 
