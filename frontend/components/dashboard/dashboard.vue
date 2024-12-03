@@ -46,8 +46,17 @@
       </div>
     </div>
 
-    <!-- IoT Data Table -->
+    <!-- Show Spinner While Loading -->
+    <div v-if="loading" class="flex justify-center items-center mt-10">
+      <div
+        class="animate-spin rounded-full h-16 w-16 border-t-4 border-iotGreen border-solid border-opacity-50"
+      ></div>
+      <p class="text-xl ml-4">Loading charts...</p>
+    </div>
+
+    <!-- Render Charts After Loading -->
     <charts
+      v-if="!loading"
       :device="selectedDevice"
       :longitude="longitude"
       :latitude="latitude"
@@ -59,6 +68,7 @@ c
 import charts from "./charts.vue";
 import { useApi } from "@/composables/useApi";
 
+const loading = ref(true);
 const selectedDevice = ref<string>("");
 const longitude = ref<number | null>(null);
 const latitude = ref<number | null>(null);
@@ -74,6 +84,8 @@ onMounted(async () => {
 
   if (storedLongitude) longitude.value = parseFloat(storedLongitude);
   if (storedLatitude) latitude.value = parseFloat(storedLatitude);
+
+  loading.value = false; // Mark loading as complete
 });
 
 // Watch long and lat for changes and store in localStorage

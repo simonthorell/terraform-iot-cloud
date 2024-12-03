@@ -55,41 +55,14 @@ const updateCharts = async (smhi_data: SmhiData) => {
   const startTime = new Date(now.getTime() - 12 * 60 * 60 * 1000); // 12 hours back
   const endTime = new Date(now.getTime() + 12 * 60 * 60 * 1000); // 12 hours forward
 
-  // Generate x-axis full-hour labels for the range
-  const generateFullHourLabels = (start: Date, end: Date): string[] => {
-    const labels: string[] = [];
-    const current = new Date(start);
-    while (current <= end) {
-      labels.push(
-        current.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      );
-      current.setHours(current.getHours() + 1);
-    }
-    return labels;
-  };
-
-  const fullHourLabels = generateFullHourLabels(startTime, endTime);
-  // console.log("Full-hour labels:", fullHourLabels);
-
   // Filter IoT data for the selected device and time range
-  // const filteredIoTData = iot_data.value.filter((item) => {
-  //   const timestampMs = Number(item.timestamp) * 1000; // Convert to milliseconds
-  //   return (
-  //     item.device_id === props.device && // Filter by selected device
-  //     timestampMs >= startTime.getTime() &&
-  //     timestampMs <= endTime.getTime()
-  //   );
-  // });
-
-  // Filter IoT data based on device selection and time range
   const filteredIoTData = iot_data.value.filter((item) => {
     const timestampMs = Number(item.timestamp) * 1000; // Convert to milliseconds
-    const isWithinTimeRange =
-      timestampMs >= startTime.getTime() && timestampMs <= endTime.getTime();
-    const isDeviceMatch =
-      props.device === "All Devices" || item.device_id === props.device;
-
-    return isWithinTimeRange && isDeviceMatch; // Include all devices if "All Devices" is selected
+    return (
+      item.device_id === props.device && // Filter by selected device
+      timestampMs >= startTime.getTime() &&
+      timestampMs <= endTime.getTime()
+    );
   });
 
   // Map IoT data to scatter points
