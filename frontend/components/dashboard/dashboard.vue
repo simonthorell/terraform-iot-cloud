@@ -2,142 +2,91 @@
 <template>
   <main class="flex-grow p-5 text-iotGreen font-mono">
     <h2 class="text-3xl mb-5">Live IoT Data</h2>
-    <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2">
-      <!-- Temperature Meter -->
-      <div class="bg-iotGray p-5 rounded-lg shadow-md shadow-iotGreen">
-        <h3 class="text-center text-xl mb-5">Temperature</h3>
-        <canvas ref="tempChart"></canvas>
+
+    <!-- Input Fields for Filters -->
+    <div class="mb-5 grid gap-5 grid-cols-1 sm:grid-cols-3 lg:grid-cols-3">
+      <div>
+        <label for="device" class="block text-sm font-medium">Device</label>
+        <select
+          id="device"
+          v-model="selectedDevice"
+          class="w-full p-2 mt-1 rounded bg-iotGray text-iotGreen border border-iotGreen"
+        >
+          <option value="">All Devices</option>
+          <option
+            v-for="device in devices"
+            :key="device.device_id"
+            :value="device.device_id"
+          >
+            {{ device.device_id }}
+          </option>
+        </select>
       </div>
-      <!-- Humidity Meter -->
-      <div class="bg-iotGray p-5 rounded-lg shadow-md shadow-iotGreen">
-        <h3 class="text-center text-xl mb-5">Humidity</h3>
-        <canvas ref="humidityChart"></canvas>
+      <div>
+        <label for="longitude" class="block text-sm font-medium"
+          >Longitude</label
+        >
+        <input
+          id="longitude"
+          type="number"
+          v-model="longitude"
+          class="w-full p-2 mt-1 rounded bg-iotGray text-iotGreen border border-iotGreen"
+          placeholder="Enter longitude"
+        />
+      </div>
+      <div>
+        <label for="latitude" class="block text-sm font-medium">Latitude</label>
+        <input
+          id="latitude"
+          type="number"
+          v-model="latitude"
+          class="w-full p-2 mt-1 rounded bg-iotGray text-iotGreen border border-iotGreen"
+          placeholder="Enter latitude"
+        />
       </div>
     </div>
+
+    <!-- IoT Data Table -->
+    <charts
+      :device="selectedDevice"
+      :longitude="longitude"
+      :latitude="latitude"
+    />
   </main>
 </template>
 c
 <script setup lang="ts">
+import charts from "./charts.vue";
 import { useApi } from "@/composables/useApi";
-import { useSmhi } from "~/composables/useSmhi";
-import { Chart, registerables } from "chart.js";
-Chart.register(...registerables);
 
-const tempChart = ref(null);
-const humidityChart = ref(null);
+const selectedDevice = ref<string>("");
+const longitude = ref<number | null>(null);
+const latitude = ref<number | null>(null);
 
-const { fetchForecast } = useSmhi();
+const { data: devices, fetchData: fetchDevices } = useApi<Device>("GetDevices");
 
-// Define the Device typee
-interface IotData {
-  device_id: string;
-  timestamp: number;
-  temperature: number;
-  humidity: number;
-}
-
-const {
-  data: iot_data,
-  loading,
-  error,
-  fetchData,
-} = useApi<IotData>("GetIotData");
-
+// Restore longitude and latitude from localStorage
 onMounted(async () => {
-  await fetchData(); // Fetch IoT data
-  const smhi_data = await fetchForecast(59.7246, 17.1016); // Fetch SMHI forecast data
+  await fetchDevices();
 
-  if (!smhi_data) {
-    console.error("Failed to fetch SMHI data");
-    return;
-  }
+  const storedLongitude = localStorage.getItem("longitude");
+  const storedLatitude = localStorage.getItem("latitude");
 
-  // Merge IoT and SMHI Data
-  const currentTime = Date.now();
-  const pastHours = 6 * 60 * 60 * 1000; // Last 6 hours
-  const smhiLastHours = smhi_data.timeSeries.filter(
-    (entry: { validTime: string | number | Date }) => {
-      const forecastTime = new Date(entry.validTime).getTime();
-      return forecastTime >= currentTime - pastHours;
-    }
-  );
-
-  const labels = iot_data.value.map((item) =>
-    new Date(Number(item.timestamp) * 1000).toLocaleTimeString()
-  );
-  const temperatureData = iot_data.value.map((item) => item.temperature || 0);
-  const humidityData = iot_data.value.map((item) => item.humidity || 0);
-
-  // Add SMHI Data to Charts
-  const smhiTimestamps = smhiLastHours.map(
-    (entry: { validTime: string | number | Date }) =>
-      new Date(entry.validTime).toLocaleTimeString()
-  );
-  const smhiTemperatureData = smhiLastHours.map(
-    (entry: { parameters: any[] }) =>
-      entry.parameters.find((param: { name: string }) => param.name === "t")
-        ?.values[0] || 0
-  );
-  const smhiHumidityData = smhiLastHours.map(
-    (entry: { parameters: any[] }) =>
-      entry.parameters.find((param: { name: string }) => param.name === "r")
-        ?.values[0] || 0
-  );
-
-  // Temperature Chart
-  if (tempChart.value) {
-    new Chart(tempChart.value as HTMLCanvasElement, {
-      type: "line",
-      data: {
-        labels: [...labels, ...smhiTimestamps],
-        datasets: [
-          {
-            label: "IoT Temperature (°C)",
-            data: temperatureData,
-            borderColor: "#00ff00",
-            backgroundColor: "rgba(0, 255, 0, 0.2)",
-          },
-          {
-            label: "SMHI Forecast Temperature (°C)",
-            data: smhiTemperatureData,
-            borderColor: "#ff0000",
-            backgroundColor: "rgba(255, 0, 0, 0.2)",
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: true } },
-      },
-    });
-  }
-
-  // Humidity Chart
-  if (humidityChart.value) {
-    new Chart(humidityChart.value as HTMLCanvasElement, {
-      type: "line",
-      data: {
-        labels: [...labels, ...smhiTimestamps],
-        datasets: [
-          {
-            label: "IoT Humidity (%)",
-            data: humidityData,
-            borderColor: "#00ff00",
-            backgroundColor: "rgba(0, 255, 0, 0.2)",
-          },
-          {
-            label: "SMHI Forecast Humidity (%)",
-            data: smhiHumidityData,
-            borderColor: "#0000ff",
-            backgroundColor: "rgba(0, 0, 255, 0.2)",
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: true } },
-      },
-    });
-  }
+  if (storedLongitude) longitude.value = parseFloat(storedLongitude);
+  if (storedLatitude) latitude.value = parseFloat(storedLatitude);
 });
+
+// Watch long and lat for changes and store in localStorage
+watch(
+  [longitude, latitude],
+  ([newLongitude, newLatitude]) => {
+    if (newLongitude !== null) {
+      localStorage.setItem("longitude", newLongitude.toString());
+    }
+    if (newLatitude !== null) {
+      localStorage.setItem("latitude", newLatitude.toString());
+    }
+  },
+  { immediate: true }
+);
 </script>

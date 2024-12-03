@@ -1,4 +1,4 @@
-interface IotData {
+export interface SmhiData {
   timeSeries: any;
   device_id: string;
   timestamp: number;
@@ -10,7 +10,7 @@ interface IotData {
 export function useSmhi() {
   const BASE_URL = 'https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2';
 
-  async function fetchForecast(lat: number, lon: number): Promise<IotData | null> {
+  async function fetchForecast(lat: number, lon: number): Promise<SmhiData | null> {
     try {
       const response = await fetch(`${BASE_URL}/geotype/point/lon/${lon}/lat/${lat}/data.json`);
       if (!response.ok) {
