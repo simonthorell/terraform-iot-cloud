@@ -16,14 +16,17 @@
     </div>
   </main>
 </template>
-
+c
 <script setup lang="ts">
 import { useApi } from "@/composables/useApi";
+import { useSmhi } from "~/composables/useSmhi";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
 const tempChart = ref(null);
 const humidityChart = ref(null);
+
+const { fetchForecast } = useSmhi();
 
 // Define the Device typee
 interface IotData {
@@ -41,49 +44,99 @@ const {
 } = useApi<IotData>("GetIotData");
 
 onMounted(async () => {
-  await fetchData(); // Wait until iot_data is fetched
-  console.log("IoT Data:", iot_data.value);
+  await fetchData(); // Fetch IoT data
+  const smhi_data = await fetchForecast(59.7246, 17.1016); // Fetch SMHI forecast data
 
-  // Extract real data
+  if (!smhi_data) {
+    console.error("Failed to fetch SMHI data");
+    return;
+  }
+
+  // Merge IoT and SMHI Data
+  const currentTime = Date.now();
+  const pastHours = 6 * 60 * 60 * 1000; // Last 6 hours
+  const smhiLastHours = smhi_data.timeSeries.filter(
+    (entry: { validTime: string | number | Date }) => {
+      const forecastTime = new Date(entry.validTime).getTime();
+      return forecastTime >= currentTime - pastHours;
+    }
+  );
+
   const labels = iot_data.value.map((item) =>
     new Date(Number(item.timestamp) * 1000).toLocaleTimeString()
   );
   const temperatureData = iot_data.value.map((item) => item.temperature || 0);
   const humidityData = iot_data.value.map((item) => item.humidity || 0);
 
+  // Add SMHI Data to Charts
+  const smhiTimestamps = smhiLastHours.map(
+    (entry: { validTime: string | number | Date }) =>
+      new Date(entry.validTime).toLocaleTimeString()
+  );
+  const smhiTemperatureData = smhiLastHours.map(
+    (entry: { parameters: any[] }) =>
+      entry.parameters.find((param: { name: string }) => param.name === "t")
+        ?.values[0] || 0
+  );
+  const smhiHumidityData = smhiLastHours.map(
+    (entry: { parameters: any[] }) =>
+      entry.parameters.find((param: { name: string }) => param.name === "r")
+        ?.values[0] || 0
+  );
+
+  // Temperature Chart
   if (tempChart.value) {
     new Chart(tempChart.value as HTMLCanvasElement, {
       type: "line",
       data: {
-        labels, // Use real timestamps
+        labels: [...labels, ...smhiTimestamps],
         datasets: [
           {
-            label: "Temperature (°C)",
-            data: temperatureData, // Use real temperature data
+            label: "IoT Temperature (°C)",
+            data: temperatureData,
             borderColor: "#00ff00",
             backgroundColor: "rgba(0, 255, 0, 0.2)",
           },
+          {
+            label: "SMHI Forecast Temperature (°C)",
+            data: smhiTemperatureData,
+            borderColor: "#ff0000",
+            backgroundColor: "rgba(255, 0, 0, 0.2)",
+          },
         ],
       },
-      options: { responsive: true, plugins: { legend: { display: false } } },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: true } },
+      },
     });
   }
 
+  // Humidity Chart
   if (humidityChart.value) {
     new Chart(humidityChart.value as HTMLCanvasElement, {
       type: "line",
       data: {
-        labels, // Use real timestamps
+        labels: [...labels, ...smhiTimestamps],
         datasets: [
           {
-            label: "Humidity (%)",
-            data: humidityData, // Use real humidity data
+            label: "IoT Humidity (%)",
+            data: humidityData,
             borderColor: "#00ff00",
             backgroundColor: "rgba(0, 255, 0, 0.2)",
           },
+          {
+            label: "SMHI Forecast Humidity (%)",
+            data: smhiHumidityData,
+            borderColor: "#0000ff",
+            backgroundColor: "rgba(0, 0, 255, 0.2)",
+          },
         ],
       },
-      options: { responsive: true, plugins: { legend: { display: false } } },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: true } },
+      },
     });
   }
 });
