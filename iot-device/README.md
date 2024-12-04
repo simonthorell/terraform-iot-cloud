@@ -103,14 +103,14 @@ cargo build --release
 List all usb devices on MacOS:
 
 ```zsh
+ls /dev/ccu.*
 ls /dev/tty.*
 ```
 
 ```shell
 cd iot-device/esp32c3
-espflash flash target/riscv32imc-esp-espidf/release/esp32c3
 # espflash flash target/<mcu-target>/debug/<your-project-name>
-
+espflash flash target/riscv32imc-esp-espidf/release/esp32c3
 # For monitoring, add the --montor flag:
 espflash flash target/riscv32imc-esp-espidf/release/esp32c3  --monitor
 ```

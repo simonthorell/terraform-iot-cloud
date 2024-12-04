@@ -29,7 +29,6 @@ services:
       - TF_VAR_aws_region=${AWS_DEFAULT_REGION}
       - TF_VAR_aws_access_key_id=${AWS_ACCESS_KEY_ID}
       - TF_VAR_aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}
-      - TF_VAR_environment=${ENVIRONMENT} # TODO: Implement...
     volumes:
       - .:/workspace
     working_dir: /workspace/terraform
@@ -54,8 +53,6 @@ services:
       - ./iot-device/.certs/iot_private_key.pem:/certs/iot_private_key.pem
       - ./iot-device/.certs/iot_endpoint.txt:/certs/iot_endpoint.txt
     command: sh -c "cargo build --release"
-    # command: sh -c "cargo clean && cargo build --release"
-    # command: sh -c "tail -f /dev/null"
 
   localstack:
     container_name: localstack

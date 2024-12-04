@@ -15,22 +15,6 @@ resource "aws_amplify_app" "nuxt3_app" {
     target = "/index.html"
     status = "404"
   }
-
-  # build_spec = <<-EOT
-  #   version: 2.0
-  #   frontend:
-  #     phases:
-  #       preBuild:
-  #         commands: []
-  #       build:
-  #         commands: []
-  #     artifacts:
-  #       baseDirectory: .
-  #       files:
-  #         - '**/*'
-  #     cache:
-  #       paths: []
-  # EOT
 }
 
 resource "aws_amplify_branch" "main_branch" {
