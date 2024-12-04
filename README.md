@@ -6,17 +6,24 @@ At the core of this project is **Terraform**, which serves as the backbone for I
 
 ### Production Environment
 
-In production, the ESP32 IoT device collects temperature and humidity readings and sends them to AWS IoT Core via MQTT. Upon arrival, IoT Core adds a timestamp to each data point for precise recording. The data is then routed to AWS DynamoDB using IoT Core Rules, where it is stored for further processing and retrieval.
+In production, the **ESP32** IoT device collects temperature and humidity readings and sends them to **AWS IoT Core** using MQTT.
+Upon arrival, IoT Core adds a timestamp to the datapoint. The data is then routed to AWS DynamoDB using IoT Core Rules, where it is stored for further processing and retrieval.
 
-AWS DynamoDB serves as the primary database, storing temperature, humidity, and timestamps. Processing is handled by AWS Lambda functions. The `iot_data` function retrieves and processes data for external applications and the frontend, while the `devices` function manages device-specific logic. Both functions are accessible through AWS API Gateway, which provides a structured REST API for external systems and the frontend.
+**AWS DynamoDB** serves as the primary database, storing temperature, humidity, and timestamps.
 
-AWS Amplify connects the backend to the user-facing frontend and manages user authentication through AWS Cognito. Cognito ensures secure user interactions, while IAM handles permissions across all AWS resources, ensuring a scalable and secure architecture.
+**AWS Lambda** functions power the frontend UI by handling serverless processing and logic. The `iot_data` function retrieves and processes data from the database to deliver the necessary information to the UI, while the `devices` function serve device-status data using AWS IoT-Core Device Shadows.
+
+Both functions are integrated with **AWS API Gateway**, which provides a structured REST API for seamless interaction with external systems and the frontend.
+
+**AWS Amplify** connects the backend to the user-facing frontend and manages user authentication through AWS Cognito. Cognito ensures secure user interactions, while IAM handles permissions across all AWS resources, ensuring a scalable and secure architecture.
 
 ### Development Environment
 
 The development workflow focuses on three main components:
 
-**First**, the IoT device firmware, written in Rust, collects and transmits data. **Second**, the backend API, developed in Go, powers the Lambda functions that process and retrieve the data. **Third**, the frontend, built with Nuxt.js and Vue, visualizes the data in clear, user-friendly dashboards. Terraform is used to provision and configure all required AWS resources, ensuring a robust infrastructure.
+- **IoT Device Firmware**, written in Rust, collects and transmits data from an ESP32 device.
+- **Lambda API**, developed in Go, powers the Lambda functions that provide the frontend with data.
+- **Frontend UI**, built with Nuxt.js and Vue, visualizes the data in clear, user-friendly dashboards.
 
 To simplify development, artifacts like the Rust firmware, Go binaries, and frontend assets are compiled, zipped and stored in dedicated S3 buckets. These buckets make components easy to access and deploy. The frontend, hosted on AWS Amplify, uses the API Gateway to display real-time temperature and humidity data from the IoT devices.
 
