@@ -105,7 +105,11 @@ resource "aws_iot_topic_rule" "iot_data_to_dynamodb" {
   enabled     = true
 
   # SQL query to select all data and extract device_id from topic
-  sql         = "SELECT * FROM '+/telemetry'"
+  sql = <<EOF
+      SELECT *, (timestamp() / 1000) AS timestamp 
+      FROM '+/telemetry'
+  EOF
+  # Adds timestamp in second to the data
   sql_version = "2016-03-23"
 
   # DynamoDBv2 action to store the incoming data
