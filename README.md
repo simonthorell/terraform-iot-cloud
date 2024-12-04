@@ -1,10 +1,8 @@
-# IoT Terraform AWS Cloud
+# AWS Terraform IoT Cloud
 
-<img src=".assets/terraform.png" alt="Terraform" style="width: 150px; margin-right: 20px; margin-bottom: 30px; margin-top: 30px;">
+<img src=".assets/terraform.png" alt="Terraform" style="width: 150px; margin-right: 20px; margin-bottom: 50px; margin-top: 50px;">
 
 This **IoT system** is designed to collect, process, store, and display temperature and humidity data from an ESP32 IoT device, integrating seamlessly with **AWS** cloud services and a frontend application.
-
----
 
 At the core of this project is **Terraform**, which serves as the backbone for Infrastructure As Code **(IaC)**, ensuring that all AWS resources are provisioned and deployed in a consistent, automated, and scalable manner.
 
@@ -23,6 +21,8 @@ Both functions are integrated with **AWS API Gateway**, which provides a structu
 
 **AWS Amplify** connects the backend to the user-facing frontend and manages user authentication through AWS Cognito. Cognito ensures secure user interactions, while IAM handles permissions across all AWS resources, ensuring a scalable and secure architecture.
 
+---
+
 ### Development Environment
 
 The development workflow focuses on three main components:
@@ -35,9 +35,13 @@ To simplify development, artifacts like the Rust firmware, Go binaries, and fron
 
 This system provides an integrated solution, enabling seamless data flow from IoT devices to the AWS cloud. The data is processed and presented in intuitive dashboards and visualizations, giving users comprehensive and interactive insights.
 
+---
+
 ## System Architechture Diagram
 
 ![My Image](.assets/diagram.png)
+
+---
 
 ## Development Pre-requisites
 
@@ -74,6 +78,8 @@ If you use VS Code as your IDE, the following extensions are recommended to impr
 5. **[ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)**
 6. **[Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)**
 7. **[Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml)**
+
+---
 
 ## Setup AWS Account
 
@@ -125,6 +131,8 @@ Run the following commands to ensure Terraform can access AWS and configure reso
 docker-compose up --build terraform
 ```
 
+---
+
 ## Terraform Output Files
 
 Terraform generates several output files that are used for various tasks.
@@ -145,6 +153,8 @@ root_ca.pem
 api-endpoints.json
 cognito-config.json
 ```
+
+---
 
 ## Deployment
 
@@ -167,6 +177,8 @@ docker-compose up --build terraform
 ```
 
 Now access your app using the URL in `.amplify.url.txt`.
+
+---
 
 ## Licence
 
