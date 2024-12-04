@@ -34,6 +34,7 @@ anyhow = "1.0"
 embedded-svc = "=0.28.0" # Required by esp-idf-svc v0.49.1
 once_cell = "1.17.1"
 esp-idf-sys = "0.35.0" # ESP_FAIL etc.
+rand = "0.8" # random number generator (for prototype)
 
 [build-dependencies]
 embuild = "0.32.0"

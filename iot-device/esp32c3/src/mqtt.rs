@@ -1,15 +1,15 @@
 use core::time::Duration;
 use esp_idf_sys::*; // ESP_FAIL
 use log::*;
+use once_cell::sync::Lazy;
+use std::ffi::CString;
 
 // MQTT
 use esp_idf_svc::mqtt::client::*;
 use esp_idf_svc::sys::EspError;
-
-// mTLS support
 use esp_idf_svc::tls::X509;
-use once_cell::sync::Lazy;
-use std::ffi::CString;
+
+use crate::sensor;
 
 // Configuration from environment variables & certificates
 const DEVICE_ID: &str = env!("DEVICE_ID");
@@ -88,15 +88,15 @@ pub fn run(
                 info!("Subscribed to topic \"{device_sub_topic}\"");
             }
 
-            // Publish a message
+            // Publish a message with sensor data
+            let (temperature, humidity) = sensor::fetch_sensor_data();
             let payload = format!(
                 r#"{{
                     "device_id": "{}",
-                    "timestamp": 1693851730,
-                    "temperature": 23,
-                    "humidity": 50
+                    "temperature": {:.2},
+                    "humidity": {:.2}
                 }}"#,
-                DEVICE_ID
+                DEVICE_ID, temperature, humidity
             );
 
             match client.enqueue(
@@ -114,9 +114,8 @@ pub fn run(
                 }
             }
 
-            // Sleep to give time for events and avoid tight looping
-            std::thread::sleep(Duration::from_secs(2));
-            // info!("Now sleeping for {sleep_secs}s before the next publish/subscribe cycle...");
+            // Wait 30 seconds until publishing the next message
+            std::thread::sleep(Duration::from_secs(30));
         }
     });
 

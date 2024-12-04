@@ -1,5 +1,6 @@
 // Modules
 mod mqtt;
+mod sensor;
 mod utils;
 mod wifi; // Debug utilities
 
