@@ -1,44 +1,54 @@
 # IoT Terraform AWS Cloud
 
-This IoT system is designed to collect, process, store, and display temperature and humidity data from an ESP32 IoT device, integrating seamlessly with AWS cloud services and a frontend application.
+This IoT system is designed to collect, process, store, and display temperature and humidity data from an ESP32 IoT device, integrating seamlessly with **AWS** cloud services and a frontend application.
+
+At the core of this project is **Terraform**, which serves as the backbone for Infrastructure As Code, **(IaC)** ensuring that all AWS resources are provisioned and deployed in a consistent, automated, and scalable manner.
 
 ### Production Environment
 
-In the production environment, the ESP32 IoT device serves as the data source, collecting temperature and humidity readings and sending them to AWS IoT Core via MQTT. Once the data reaches IoT Core, a timestamp is added, ensuring each data point is precisely recorded. IoT Core then routes this enriched data using IoT Core Rules to AWS DynamoDB, where it is stored for further processing and retrieval.
+In production, the ESP32 IoT device collects temperature and humidity readings and sends them to AWS IoT Core via MQTT. Upon arrival, IoT Core adds a timestamp to each data point for precise recording. The data is then routed to AWS DynamoDB using IoT Core Rules, where it is stored for further processing and retrieval.
 
-AWS DynamoDB acts as the system's primary database, holding all the temperature, humidity, and timestamped records. The system's processing logic is handled by AWS Lambda functions. One function, iot_data, retrieves and processes the stored data for external applications and the frontend, while the devices function manages logic specific to the IoT devices themselves. These functions are exposed through AWS API Gateway, providing a structured REST API for accessing the data from external systems or the frontend.
+AWS DynamoDB serves as the primary database, storing temperature, humidity, and timestamps. Processing is handled by AWS Lambda functions. The `iot_data` function retrieves and processes data for external applications and the frontend, while the `devices` function manages device-specific logic. Both functions are accessible through AWS API Gateway, which provides a structured REST API for external systems and the frontend.
 
-To manage the application interface and user authentication, AWS Amplify serves as the bridge between the backend and the user-facing frontend. Amplify integrates seamlessly with AWS Cognito, which handles user authentication and access control, ensuring secure interactions with the system. Additionally, IAM manages permissions for all AWS resources, maintaining a secure and scalable architecture.
+AWS Amplify connects the backend to the user-facing frontend and manages user authentication through AWS Cognito. Cognito ensures secure user interactions, while IAM handles permissions across all AWS resources, ensuring a scalable and secure architecture.
 
 ### Development Environment
 
-In the development environment, the workflow begins with developers working on three main components. The first is the IoT device firmware, written in Rust, which is responsible for collecting and transmitting data. The second is the backend API, developed in Go, which powers the Lambda functions that process and retrieve data. The third component is the frontend, built using Nuxt.js and Vue, which displays the data in user-friendly diagrams and visualizations. These components are supported by a robust infrastructure setup, managed with Terraform to provision and configure the necessary AWS resources.
+The development workflow focuses on three main components:
 
-To streamline development, all artifacts—such as the Rust firmware, Go binaries, and frontend assets—are packaged and stored in dedicated S3 buckets. These buckets ensure that the components are easily accessible and can be deployed efficiently. The frontend, hosted via Amplify, consumes the processed IoT data through the API Gateway, offering users real-time insights into the temperature and humidity data collected from the IoT devices.
+**First**, the IoT device firmware, written in Rust, collects and transmits data. **Second**, the backend API, developed in Go, powers the Lambda functions that process and retrieve the data. **Third**, the frontend, built with Nuxt.js and Vue, visualizes the data in clear, user-friendly dashboards. Terraform is used to provision and configure all required AWS resources, ensuring a robust infrastructure.
 
-This system is a tightly integrated solution where data flows seamlessly from the IoT devices through the AWS cloud and is ultimately presented in intuitive dashboards and diagrams, offering users a complete and interactive view of their data.
+To simplify development, artifacts like the Rust firmware, Go binaries, and frontend assets are compiled, zipped and stored in dedicated S3 buckets. These buckets make components easy to access and deploy. The frontend, hosted on AWS Amplify, uses the API Gateway to display real-time temperature and humidity data from the IoT devices.
+
+This system provides an integrated solution, enabling seamless data flow from IoT devices to the AWS cloud. The data is processed and presented in intuitive dashboards and visualizations, giving users comprehensive and interactive insights.
 
 ## System Architechture Diagram
 
 ![My Image](.assets/diagram.png)
 
-## Development Prerequisites
+## Development Pre-requisites
+
+While it is preferable to set up the development environments using tools like Devcontainers, this repository is designed to accommodate full flexibility instead.
+
+This project is not tied to any CI/CD pipeline or repository-specific tools, allowing for flexibility in development.
+
+Any integrated development environment (IDE) can be used, or even a minimal setup running directly from a USB stick with basic text editors like nano or vi, as long as Docker is installed in the environment for compilation and deployment.
 
 ### Required Applications
 
 To set up and develop this project, you’ll need the following applications:
 
-1. **[Git](https://git-scm.com/downloads)**
-2. **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**
+1. **[Docker](https://www.docker.com/products/docker-desktop/)**
 
 ### Optional Applications
 
 These tools can enhance your development experience but are not strictly required:
 
-1. **[Visual Studio Code (VS Code)](https://code.visualstudio.com/)**
-2. **[Node.js](https://nodejs.org/)**
-3. **[npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)**
-4. **[Vue Devtools](https://devtools.vuejs.org/guide/installation.html)**
+1. **[Git](https://git-scm.com/downloads)**
+2. **[Visual Studio Code (VS Code)](https://code.visualstudio.com/)**
+3. **[Node.js](https://nodejs.org/)**
+4. **[npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)**
+5. **[Vue Devtools](https://devtools.vuejs.org/guide/installation.html)**
 
 ### Recommended VS Code Extensions
 
@@ -123,19 +133,27 @@ api-endpoints.json
 cognito-config.json
 ```
 
-## Development Environment
-
-This repository comes with a preconfigured docker-compose file that contains all the necessary images for local development.
-
-```shell
-docker-compose up
-```
-
 ## Deployment
 
-This repositary contain scripts for automatic deployment of the cloud services.
+If you plan to use this repository in a production environment with an active codebase, it is highly recommended to implement CI/CD scripts to automate and streamline the deployment process.
 
-The IoT device binary firmware will automatically we pushed to an AWS S3 bucket that the device can poll to get latest firmware using OTA (over the air).
+Below are the steps to manually build and deploy the components of this project:
+
+```shell
+# Generate API binaries
+docker-compose up --build api
+
+# Generate API-endpoints for frontend & certs for IoT-Device
+docker-compose up --build terraform
+
+docker-compose up --build nuxt-frontend # Build Frontend
+docker-compose up --build esp32-rust # Build IoT-device Firmware
+
+# Push frontend & IoT Firmware to AWS
+docker-compose up --build terraform
+```
+
+Now access your app using the URL in `.amplify.url.txt`.
 
 ## Licence
 
