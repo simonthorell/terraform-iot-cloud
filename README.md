@@ -2,7 +2,7 @@
 
 <div style="display: flex; align-items: center;">
 
-<img src=".assets/terraform.png" alt="Terraform" style="width: 150px; margin-right: 20px; padding-top: 10px; padding-bottom: 10px;">
+<img src=".assets/terraform.png" alt="Terraform" style="width: 150px; margin-right: 20px; margin-top: 10px; margin-bottom: 30px;">
 
 <div>
 <p>
