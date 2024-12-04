@@ -30,3 +30,4 @@ terraform/.DS_Store
 .assets/*
 !.assets/diagram.drawio
 !.assets/diagram.png
+!.assets/terraform.png
