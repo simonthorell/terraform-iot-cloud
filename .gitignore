@@ -25,3 +25,8 @@ certs/.DS_Store
 frontend/.DS_Store
 iot-device/.DS_Store
 terraform/.DS_Store
+
+# Assets
+.assets/*
+!.assets/diagram.drawio
+!.assets/diagram.png
