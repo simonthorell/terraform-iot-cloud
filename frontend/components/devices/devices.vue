@@ -1,7 +1,29 @@
 <template>
   <main class="flex-grow p-5 text-iotGreen font-mono">
-    <h2 class="text-3xl mb-5">Devices</h2>
-    <div class="bg-iotGray p-5 rounded-lg shadow-md shadow-iotGreen">
+    <div class="flex justify-between items-center mb-5">
+      <h2 class="text-3xl">Devices</h2>
+      <button
+        @click="() => fetchData()"
+        :disabled="loading"
+        class="text-iotGreen bg-iotBlack border border-iotGreen hover:bg-iotGreen hover:text-black transition duration-300 py-2 px-4 rounded-lg"
+      >
+        Refresh
+      </button>
+    </div>
+
+    <!-- Show Spinner While Loading -->
+    <div v-if="loading" class="flex justify-center items-center mt-10">
+      <div
+        class="animate-spin rounded-full h-16 w-16 border-t-4 border-iotGreen border-solid border-opacity-50"
+      ></div>
+      <p class="text-xl ml-4">Loading charts...</p>
+    </div>
+
+    <!-- Devices Table -->
+    <div
+      v-if="!loading"
+      class="bg-iotGray p-5 rounded-lg shadow-md shadow-iotGreen"
+    >
       <table class="table-auto w-full text-left border-collapse">
         <thead>
           <tr>

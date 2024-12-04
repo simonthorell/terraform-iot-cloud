@@ -1,7 +1,16 @@
 <!-- components/dashboard/dashboard.vue -->
 <template>
   <main class="flex-grow p-5 text-iotGreen font-mono">
-    <h2 class="text-3xl mb-5">Live IoT Data</h2>
+    <div class="flex justify-between items-center mb-5">
+      <h2 class="text-3xl">Live Iot Data</h2>
+      <button
+        @click="handleRefresh"
+        :disabled="loading"
+        class="text-iotGreen bg-iotBlack border border-iotGreen hover:bg-iotGreen hover:text-black transition duration-300 py-2 px-4 rounded-lg"
+      >
+        Refresh
+      </button>
+    </div>
 
     <!-- Input Fields for Filters -->
     <div class="mb-5 grid gap-5 grid-cols-1 sm:grid-cols-3 lg:grid-cols-3">
@@ -101,4 +110,11 @@ watch(
   },
   { immediate: true }
 );
+
+// Refresh handler
+const handleRefresh = async () => {
+  loading.value = true; // Start loading
+  await fetchDevices(); // Fetch devices
+  loading.value = false; // End loading
+};
 </script>
