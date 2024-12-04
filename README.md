@@ -2,10 +2,16 @@
 
 <div style="display: flex; align-items: center;">
 
-<img src=".assets/terraform.png" alt="My Image" style="width: 150px; margin-right: 40px; padding-top: 10px; padding-bottom: 10px;">
+<img src=".assets/terraform.png" alt="Terraform" style="width: 150px; margin-right: 20px; padding-top: 10px; padding-bottom: 10px;">
 
-This **IoT system** is designed to collect, process, store, and display temperature and humidity data from an ESP32 IoT device, integrating seamlessly with **AWS** cloud services and a frontend application.  
-At the core of this project is **Terraform**, which serves as the backbone for Infrastructure As Code **(IaC)**, ensuring that all AWS resources are provisioned and deployed in a consistent, automated, and scalable manner.
+<div>
+<p>
+This <b>IoT system</b> is designed to collect, process, store, and display temperature and humidity data from an ESP32 IoT device, integrating seamlessly with <b>AWS</b> cloud services and a frontend application.
+</p>
+<p>
+At the core of this project is <b>Terraform</b>, which serves as the backbone for Infrastructure As Code <b>(IaC)</b>, ensuring that all AWS resources are provisioned and deployed in a consistent, automated, and scalable manner.
+</p>
+</div>
 
 </div>
 
