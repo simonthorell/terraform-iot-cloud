@@ -122,7 +122,7 @@ Terraform generates several output files that are used for various tasks.
 # root directory
 .amplify_app_url.txt
 
-# api/.certs
+# iot-device/.certs
 iot_cert.pem
 iot_endpoint.txt
 iot_private_key.pem
