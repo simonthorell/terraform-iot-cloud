@@ -50,8 +50,9 @@ module "amplify" {
 }
 
 module "cognito" {
-  source     = "./cognito"
-  aws_region = var.aws_region
+  source          = "./cognito"
+  aws_region      = var.aws_region
+  amplify_app_url = module.amplify.amplify_app_url
 }
 
 module "api_gateway" {

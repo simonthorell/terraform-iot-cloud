@@ -37,13 +37,11 @@ resource "aws_cognito_user_pool_client" "user_pool_client" {
 
   # Add localhost for local development
   callback_urls = [
-    "http://localhost:3000/",   # Localhost for development
-    # "https://your-app-url.com/callback" # Production URL
+    "https://${var.amplify_app_url}/",
   ]
 
   logout_urls = [
-    "http://localhost:3000/logout",    # Localhost for development
-    # "https://your-app-url.com/logout"  # Production URL
+    "https://${var.amplify_app_url}/logout",    # Localhost for development
   ]
 
   supported_identity_providers = ["COGNITO"]
@@ -56,7 +54,7 @@ resource "local_file" "cognito_frontend_config" {
     userPoolId        = aws_cognito_user_pool.user_pool.id
     userPoolClientId  = aws_cognito_user_pool_client.user_pool_client.id
     authDomain        = replace(aws_cognito_user_pool.user_pool.endpoint, "https://", "")
-    callbackUrl       = "http://localhost:3000/callback"
-    logoutUrl         = "http://localhost:3000/logout"
+    callbackUrl       = "https://${var.amplify_app_url}/callback"
+    logoutUrl         = "https://${var.amplify_app_url}/logout"
   })
 }
