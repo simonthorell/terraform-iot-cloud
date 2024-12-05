@@ -43,6 +43,12 @@ This system provides an integrated solution, enabling seamless data flow from Io
 
 ---
 
+## User Interface
+
+![My Image](.assets/ui.png)
+
+---
+
 ## Development Pre-requisites
 
 While it is preferable to set up the development environments using tools like Devcontainers, this repository is designed to accommodate full flexibility instead.
