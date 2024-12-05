@@ -31,3 +31,4 @@ terraform/.DS_Store
 !.assets/diagram.drawio
 !.assets/diagram.png
 !.assets/terraform.png
+!.assets/ui.png
