@@ -24,22 +24,38 @@ type IoTData struct {
 	Humidity    float64 `json:"humidity"`
 }
 
-// Sends a message to Discord using the provided webhook URL
-func sendToDiscord(webhookURL, message string) error {
-	payload := map[string]string{
-		"content": message,
+// Sends a warning embed message to Discord using the provided webhook URL
+func sendToDiscord(webhookURL string, latestItem IoTData, warning, warningDetail string) error {
+	payload := map[string]interface{}{
+		"embeds": []map[string]interface{}{
+			{
+				"title":       "⚠️ **IoT Device Warning** ⚠️",
+				"description": fmt.Sprintf("Detected value %s\n%s", warningDetail, warning),
+				"color":       16711680, // Red color
+				"fields": []map[string]interface{}{
+					{"name": "Device ID", "value": latestItem.DeviceID, "inline": true},
+					{"name": "Timestamp", "value": fmt.Sprintf("%d", latestItem.Timestamp), "inline": true},
+					{"name": "Temperature", "value": fmt.Sprintf("%.2f°C", latestItem.Temperature), "inline": true},
+					{"name": "Humidity", "value": fmt.Sprintf("%.2f%%", latestItem.Humidity), "inline": true},
+				},
+			},
+		},
 	}
+
+	// Convert the payload to JSON
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
+	// Send the payload to Discord
 	resp, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return fmt.Errorf("failed to send message to Discord: %w", err)
 	}
 	defer resp.Body.Close()
 
+	// Check the response status
 	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("discord API returned status: %d", resp.StatusCode)
 	}
@@ -59,6 +75,12 @@ func handler(ctx context.Context, event map[string]interface{}) (string, error) 
 	if tableName == "" {
 		return "", fmt.Errorf("TABLE_NAME is not set in environment variables")
 	}
+
+	// Define threshold values
+	const minTemperature = 10.0
+	const maxTemperature = 30.0
+	const minHumidity = 40.0
+	const maxHumidity = 80.0
 
 	// Create DynamoDB client
 	sess := session.Must(session.NewSession())
@@ -114,18 +136,34 @@ func handler(ctx context.Context, event map[string]interface{}) (string, error) 
 		return "", fmt.Errorf("no valid records found with a timestamp")
 	}
 
-	// Format the message and send to Discord
-	message := fmt.Sprintf(
-		"Device: %s\nTimestamp: %d\nTemperature: %.2f°C\nHumidity: %.2f%%",
-		latestItem.DeviceID, latestItem.Timestamp, latestItem.Temperature, latestItem.Humidity,
-	)
-	log.Printf("Sending message: %s", message)
-
-	err = sendToDiscord(webhookURL, message)
-	if err != nil {
-		return "", fmt.Errorf("failed to send message for device %s: %w", latestItem.DeviceID, err)
+	// Check for warnings and include threshold values
+	var warning, warningDetail string
+	if latestItem.Temperature < minTemperature {
+		warning = fmt.Sprintf("Temperature: %.2f°C", latestItem.Temperature)
+		warningDetail = fmt.Sprintf("below the minimum threshold of %.2f°C.", minTemperature)
+	} else if latestItem.Temperature > maxTemperature {
+		warning = fmt.Sprintf("Temperature: %.2f°C", latestItem.Temperature)
+		warningDetail = fmt.Sprintf("above the maximum threshold of %.2f°C.", maxTemperature)
+	} else if latestItem.Humidity < minHumidity {
+		warning = fmt.Sprintf("Humidity: %.2f%%", latestItem.Humidity)
+		warningDetail = fmt.Sprintf("below the minimum threshold of %.2f%%.", minHumidity)
+	} else if latestItem.Humidity > maxHumidity {
+		warning = fmt.Sprintf("Humidity: %.2f%%", latestItem.Humidity)
+		warningDetail = fmt.Sprintf("above the maximum threshold of %.2f%%.", maxHumidity)
 	}
-	return "Latest IoT data pushed to Discord", nil
+
+	// Only send a message if a warning exists
+	if warning != "" {
+		err = sendToDiscord(webhookURL, latestItem, warning, warningDetail)
+		if err != nil {
+			return "", fmt.Errorf("failed to send warning to Discord: %w", err)
+		}
+		log.Printf("Warning sent to Discord for device %s", latestItem.DeviceID)
+	} else {
+		log.Printf("No warnings for device %s", latestItem.DeviceID)
+	}
+
+	return "IoT data processed", nil
 }
 
 func main() {

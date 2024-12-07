@@ -49,6 +49,14 @@ This system provides an integrated solution, enabling seamless data flow from Io
 
 ---
 
+## Discord Webhook Warnings
+
+If a published device data pass any of the thresholds set in the `discord` lambda, an automatic warning message will be sent to Discord:
+
+![DiscordWarning](.assets/discord-warning.png)
+
+---
+
 ## Scalability in AWS IoT Cloud
 
 Scalability is a cornerstone of the architecture for any IoT system, especially when dealing with dynamic workloads and potentially massive amounts of incoming data. This IoT system leverages the scalability of AWS services and Terraform's Infrastructure as Code (IaC) capabilities to ensure smooth performance and adaptability to growing demands.
@@ -150,32 +158,14 @@ If you use VS Code as your IDE, the following extensions are recommended to impr
    2. Set tag such as _"Terraform access key for IoT project"_ f.e.
    3. Complete the setup and store both **Access Key** and **Secret Access Key** in a secure location.
 
-4. Create a `.env` file in repository root and add the following variables:
-
-```shell
-# AWS Credentials
-AWS_ACCOUNT_ID=your-account-id               # Replace!
-AWS_DEFAULT_REGION=aws-default-region        # Replace!
-AWS_ACCESS_KEY_ID=your-access-key-id         # Replace!
-AWS_SECRET_ACCESS_KEY=your-secret-access-key # Replace!
-
-# IoT Device Configuration
-THING_NAME=your-iot-device-name # Replace!
-WIFI_SSID=your-wifi-ssid         # Replace!
-WIFI_PASSWORD=your-wifi-password # Replace!
-MQTT_PORT=8883
-MQTT_PUB_TOPIC=/telemetry
-MQTT_SUB_TOPIC=/downlink
-```
-
-5. Go to the [Billing and Cost Management dashboard](https://console.aws.amazon.com/costmanagement/), and follow these steps:
+4. Go to the [Billing and Cost Management dashboard](https://console.aws.amazon.com/costmanagement/), and follow these steps:
 
    1. Go to **Budgets** and select `Create a budget`.
    2. Select either "Zero-Spend" (for testing with free-tier), or set a monthly spend limit.
    3. Enter the email address you want to get auto-alerts sent to.
    4. Create the Budget.
 
-6. Test Access with **Terraform**:
+5. Test Access with **Terraform**:
 
 Run the following commands to ensure Terraform can access AWS and configure resources based on the .env file.
 
@@ -191,6 +181,32 @@ docker-compose up --build terraform
 2. Click the gear icon next to the channel name to open its settings.
 3. Go to the Integrations tab and click Create Webhook.
 4. Name your webhook, select a channel, and copy the webhook URL to `.env` file variable.
+
+## Create `.env` File
+
+Create a `.env` file in repository root and add the following variables:
+
+```shell
+# AWS Credentials
+AWS_ACCOUNT_ID=your-account-id               # Replace!
+AWS_DEFAULT_REGION=aws-default-region        # Replace!
+AWS_ACCESS_KEY_ID=your-access-key-id         # Replace!
+AWS_SECRET_ACCESS_KEY=your-secret-access-key # Replace!
+
+# IoT Device Configuration
+DEVICE_ID=your-iot-device-name   # Replace!
+OWNER_NAME=your-owner-name       # Replace!
+WIFI_SSID=your-wifi-ssid          # Replace!
+WIFI_PASSWORD=your-wifi-password  # Replace!
+
+# MQTT Configuration
+MQTT_PORT=8883
+MQTT_PUB_TOPIC="telemetry"
+MQTT_SUB_TOPIC="downlink"
+
+# Lambda Variables
+DISCORD_WEBHOOK_URL="<YOUR-DISCORD-WEBHOOK-URL>" # Replace!
+```
 
 ## Terraform Output Files
 

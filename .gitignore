@@ -32,3 +32,4 @@ terraform/.DS_Store
 !.assets/diagram.png
 !.assets/terraform.png
 !.assets/ui.png
+!.assets/discord-warning.png
