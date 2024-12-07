@@ -21,6 +21,10 @@ resource "aws_dynamodb_table" "iot_data" {
   # Specify provisioned read and write capacities
   read_capacity  = 5
   write_capacity = 5
+
+  # Enable DynamoDB Streams
+  stream_enabled   = true
+  stream_view_type = "NEW_IMAGE"
 }
 
 resource "aws_dynamodb_table" "devices" {

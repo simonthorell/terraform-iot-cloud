@@ -52,3 +52,8 @@ resource "aws_lambda_function" "discord_lambda" {
     }
   }
 }
+resource "aws_lambda_event_source_mapping" "dynamodb_trigger" {
+  event_source_arn  = var.iot_data_stream_arn
+  function_name     = aws_lambda_function.discord_lambda.arn
+  starting_position = "LATEST" # Start processing new events only
+}

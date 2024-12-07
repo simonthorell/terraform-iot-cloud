@@ -26,6 +26,7 @@ module "iam" {
   aws_account_id       = var.aws_account_id 
   aws_region           = var.aws_region
   dynamodb_table_arns  = module.dynamodb.table_arns
+  iot_data_stream_arn  = module.dynamodb.iot_data_stream_arn
   s3_bucket_name       = module.s3.bucket_name
 }
 
@@ -34,6 +35,7 @@ module "lambda" {
   dynamodb_table_names = module.dynamodb.table_names
   lambda_role_arn      = module.iam.lambda_role_arn
   discord_webhook_url  = var.discord_webhook_url
+  iot_data_stream_arn  = module.dynamodb.iot_data_stream_arn
 }
 
 module "s3" {

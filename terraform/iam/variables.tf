@@ -6,6 +6,11 @@ variable "dynamodb_table_arns" {
   type        = list(string)
 }
 
+variable "iot_data_stream_arn" {
+  description = "Stream ARN for the IoT data DynamoDB table"
+  type        = string
+}
+
 variable "s3_bucket_name" {
   type        = string
   description = "The name of the S3 bucket for Amplify deployment artifacts"

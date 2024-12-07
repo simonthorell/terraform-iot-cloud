@@ -68,13 +68,32 @@ resource "aws_iam_policy" "lambda_dynamodb_policy" {
     "Version": "2012-10-17",
     "Statement": [
       {
+        "Effect": "Allow",
         "Action": [
           "dynamodb:GetItem",
           "dynamodb:Query",
           "dynamodb:Scan"
         ],
-        "Effect": "Allow",
         "Resource": var.dynamodb_table_arns
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:DescribeStream",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator",
+          "dynamodb:ListStreams"
+        ],
+        "Resource": var.iot_data_stream_arn
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Resource": "arn:aws:logs:*:*:*"
       }
     ]
   })

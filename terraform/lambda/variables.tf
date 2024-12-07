@@ -15,3 +15,8 @@ variable "discord_webhook_url" {
   type        = string
   description = "Discord Webhook URL"
 }
+
+variable "iot_data_stream_arn" {
+  description = "Stream ARN for the IoT data DynamoDB table"
+  type        = string
+}

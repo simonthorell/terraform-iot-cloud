@@ -16,3 +16,8 @@ output "table_arns" {
     aws_dynamodb_table.devices.arn
   ]
 }
+
+output "iot_data_stream_arn" {
+  description = "Stream ARN of the IoT data DynamoDB table"
+  value       = aws_dynamodb_table.iot_data.stream_arn
+}
