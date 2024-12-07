@@ -10,3 +10,8 @@ variable "lambda_role_arn" {
   type        = string
   description = "IAM Role ARN for Lambda"
 }
+
+variable "discord_webhook_url" {
+  type        = string
+  description = "Discord Webhook URL"
+}

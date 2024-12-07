@@ -34,3 +34,21 @@ resource "aws_lambda_function" "devices_lambda" {
     }
   }
 }
+
+# Lambda Function pushing data to Discord Webhook
+resource "aws_lambda_function" "discord_lambda" {
+  filename         = "${path.root}/../api/dist/discord.zip"
+  function_name    = "PushToDiscord"
+  role             = var.lambda_role_arn
+  handler          = "main"
+  runtime          = "provided.al2"
+  timeout          = 10
+  memory_size      = 128
+
+  environment {
+    variables = {
+      TABLE_NAME = "iot_data",
+      DISCORD_WEBHOOK_URL = var.discord_webhook_url
+    }
+  }
+}

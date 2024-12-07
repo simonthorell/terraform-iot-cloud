@@ -31,3 +31,8 @@ variable "environment" {
   type        = string
   default     = "production"
 }
+
+variable "discord_webhook_url" {
+  description = "The Discord Webhook URL"
+  type        = string
+}

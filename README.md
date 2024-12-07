@@ -185,6 +185,13 @@ docker-compose up --build terraform
 
 ---
 
+## Setup Discord Webhook
+
+1. Go to your Discord server and open the channel where you want to send messages.
+2. Click the gear icon next to the channel name to open its settings.
+3. Go to the Integrations tab and click Create Webhook.
+4. Name your webhook, select a channel, and copy the webhook URL to `.env` file variable.
+
 ## Terraform Output Files
 
 Terraform generates several output files that are used for various tasks.

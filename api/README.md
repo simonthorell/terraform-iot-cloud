@@ -5,7 +5,7 @@ We are writing our lambdas using golang, and a docker-image to compile them. Ter
 ### Compile and Zip existing GO-Lambdas
 
 ```shell
-docker-compose up --build api
+docker-compose up --build --remove-orphans api
 ```
 
 ### Write New Lambda Code

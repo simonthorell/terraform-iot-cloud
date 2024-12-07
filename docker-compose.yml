@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: ./api/Dockerfile
     environment:
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
       - CORS_ORIGIN=${CORS_ORIGIN}
     volumes:
       - ./api/dist:/dist

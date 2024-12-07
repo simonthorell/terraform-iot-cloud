@@ -33,6 +33,7 @@ module "lambda" {
   source               = "./lambda"
   dynamodb_table_names = module.dynamodb.table_names
   lambda_role_arn      = module.iam.lambda_role_arn
+  discord_webhook_url  = var.discord_webhook_url
 }
 
 module "s3" {
