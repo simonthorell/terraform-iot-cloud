@@ -99,9 +99,9 @@ Terraform enhances scalability by enabling infrastructure automation and consist
 5. **Cost Management**  
    Terraform helps optimize scalability-related costs by providing fine-grained control over resource configurations. It integrates with AWS Cost Explorer and other tools to ensure that scaling aligns with budgetary goals.
 
----
-
 By combining AWS's robust scalability features with Terraform's IaC automation, this IoT system ensures that it can handle growing demands efficiently, maintain high availability, and optimize resource usage for cost-effectiveness. This architecture is well-suited for both current needs and future expansions, making it an ideal choice for production IoT systems.
+
+---
 
 ## Development Pre-requisites
 
