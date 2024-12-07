@@ -61,7 +61,7 @@ If a published device data pass any of the thresholds set in the `discord` lambd
 
 Scalability is a cornerstone of the architecture for any IoT system, especially when dealing with dynamic workloads and potentially massive amounts of incoming data. This IoT system leverages the scalability of AWS services and Terraform's Infrastructure as Code (IaC) capabilities to ensure smooth performance and adaptability to growing demands.
 
-#### **Scalability in AWS Services**
+### **Scalability in AWS Services**
 
 1. **AWS IoT Core**  
    AWS IoT Core is built to scale horizontally, handling millions of device connections and processing a high volume of MQTT messages simultaneously. With its serverless nature, it automatically adjusts capacity to match incoming traffic, ensuring low latency and reliable message delivery even as the number of devices increases.
@@ -78,9 +78,7 @@ Scalability is a cornerstone of the architecture for any IoT system, especially 
 5. **AWS Amplify and Cognito**  
    Amplify simplifies frontend-backend integration and scales alongside the underlying AWS services. Cognito supports millions of users and provides secure authentication with auto-scaling capabilities, ensuring seamless user management as the application grows.
 
----
-
-#### **The Role of Terraform in Scalability**
+### **The Role of Terraform in Scalability**
 
 Terraform enhances scalability by enabling infrastructure automation and consistency. Key benefits include:
 
@@ -182,6 +180,8 @@ docker-compose up --build terraform
 3. Go to the Integrations tab and click Create Webhook.
 4. Name your webhook, select a channel, and copy the webhook URL to `.env` file variable.
 
+---
+
 ## Create `.env` File
 
 Create a `.env` file in repository root and add the following variables:
@@ -207,6 +207,8 @@ MQTT_SUB_TOPIC="downlink"
 # Lambda Variables
 DISCORD_WEBHOOK_URL="<YOUR-DISCORD-WEBHOOK-URL>" # Replace!
 ```
+
+---
 
 ## Terraform Output Files
 
