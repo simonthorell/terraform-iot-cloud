@@ -28,7 +28,10 @@ docker-compose up --build terraform
 
 # Open a new terminal
 docker exec -it terraform /bin/bash
+
 terraform taint module.lambda.aws_lambda_function.devices_lambda
-# Example 2: terraform taint module.lambda.aws_lambda_function.iot_data_lambda
+terraform taint module.lambda.aws_lambda_function.iot_data_lambda
+terraform taint module.lambda.aws_lambda_function.discord_lambda
+
 terraform apply
 ```

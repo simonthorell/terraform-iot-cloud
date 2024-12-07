@@ -30,6 +30,7 @@ services:
       - TF_VAR_aws_region=${AWS_DEFAULT_REGION}
       - TF_VAR_aws_access_key_id=${AWS_ACCESS_KEY_ID}
       - TF_VAR_aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}
+      - TF_VAR_discord_webhook_url=${DISCORD_WEBHOOK_URL}
     volumes:
       - .:/workspace
     working_dir: /workspace/terraform
